@@ -11,14 +11,15 @@ void assembler_assemble(char* inputFile, char* outputFile) {
     struct instruction_token head = assembler_tokenizeText(linesOfText, numLines);
     
     //Step 3: Scan for symbols to define and add to the dictionary
-
-    printf("test\n");
     struct instruction_token* pointer = &head;
     struct instruction_token* pointer2;
     printf("\n\n==== Text as follows: ====\n\n");
     while(pointer != NULL) {
-        printf("%s\n",pointer->instruction_text);
-        free(pointer->instruction_text);
+
+        if(pointer->instruction_text != NULL) {
+            printf("%s\n",pointer->instruction_text);
+            free(pointer->instruction_text);
+        }
         pointer2 = pointer->nextToken;
         free(pointer);
         pointer = pointer2;
@@ -38,12 +39,11 @@ struct instruction_token assembler_tokenizeText(char** text, uint16_t numLines) 
     head.instruction_text = NULL;
 
     while(currentLine < numLines) {
-
         char* temp = assembler_tokenizeLine(text[currentLine]);
 
-        if(strlen(temp) > 0) {
+        if(temp != NULL) {
             pointer->instruction_text = temp;
-            struct instruction_token* next = (struct instruction_token*)malloc(sizeof(struct instruction_token));            
+            struct instruction_token* next = (struct instruction_token*)calloc(1,sizeof(struct instruction_token));      
             pointer->nextToken = next;
             pointer = next;
             pointer->instruction_text = NULL;
@@ -64,7 +64,7 @@ char* assembler_tokenizeLine(char* text) {
     
     uint16_t i = 0; //will step through input text
     uint16_t j = 0; //will step through toReturn, and help us to shrink it to only the needed size.
-    char* toReturn = (char*) malloc(sizeof(char) * strlen(text));
+    char* toReturn = (char*) calloc(strlen(text)+1, sizeof(char));
                     
     uint8_t usedSpace = 1;//prevents copying space multiple times
     while(i < strlen(text)) {

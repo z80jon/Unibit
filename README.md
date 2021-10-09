@@ -1,8 +1,13 @@
-Process:
+This assembler works in several steps, in the interest of simplicity of design, debugging, and implementation:
 
 1) Read in file
 2) throw away comment lines and /r/n
-4) create linked list instruction structs
+3) store every line of meaningful code (with extra spaces removed) in a linked list
+4) preprocessor + variable creation, value assignment
+5) binary generation
+6) output file generation.
+
+
 
 
 In an effort to keep things as simple as possible, only several files are used:

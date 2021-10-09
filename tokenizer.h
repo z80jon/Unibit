@@ -7,3 +7,4 @@
 
 struct instruction_token tokenize(FILE* fp);
 
+#endif

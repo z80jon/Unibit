@@ -1,3 +1,5 @@
+Hello
+
 ###############
 #  Constants  #
 ###############
@@ -15,7 +17,7 @@
 
 
 #Just copy [0..7] to [8..15]
-_start: LOAD  0
+_start: LOAD  0 
         STORE 8
         LOAD  1
         STORE 9
