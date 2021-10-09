@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if(!fileHandler_doesFileExist(argv[2])) {
+    if(fileHandler_doesFileExist(argv[2])) {
         printf("NOTE: output file file \"%s\" exists, and will be overwritten.", argv[2]);
         return 1;
     }

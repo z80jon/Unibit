@@ -1,0 +1,39 @@
+###############
+#  Constants  #
+###############
+.data
+
+###############
+#  Variables  #
+###############
+.bss
+
+###############
+#    Code     #
+###############
+.text
+
+
+#Just copy [0..7] to [8..15]
+_start: LOAD  0
+        STORE 8
+        LOAD  1
+        STORE 9
+        LOAD  2
+        STORE 10
+        LOAD  3
+        STORE 11
+        LOAD  4
+        STORE 12
+        LOAD  5
+        STORE 13
+        LOAD  6
+        STORE 14
+        LOAD  7
+        STORE 15
+
+_end:   NEGATE
+        JUMP _end
+        NEGATE
+        JUMP _end
+

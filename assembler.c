@@ -11,7 +11,21 @@ void assembler_assemble(char* inputFile, char* outputFile) {
     struct instruction_token head = assembler_tokenizeText(linesOfText, numLines);
     
     //Step 3: Scan for symbols to define and add to the dictionary
+
+    printf("test\n");
+    struct instruction_token* pointer = &head;
+    struct instruction_token* pointer2;
+    printf("\n\n==== Text as follows: ====\n\n");
+    while(pointer != NULL) {
+        printf("%s\n",pointer->instruction_text);
+        free(pointer->instruction_text);
+        pointer2 = pointer->nextToken;
+        free(pointer);
+        pointer = pointer2;
     }
+
+    printf("Assembly complete!\n");
+}
 
 
 
@@ -27,7 +41,7 @@ struct instruction_token assembler_tokenizeText(char** text, uint16_t numLines) 
 
         char* temp = assembler_tokenizeLine(text[currentLine]);
 
-        if(strlen(temp) > 0)) {
+        if(strlen(temp) > 0) {
             pointer->instruction_text = temp;
             struct instruction_token* next = (struct instruction_token*)malloc(sizeof(struct instruction_token));            
             pointer->nextToken = next;

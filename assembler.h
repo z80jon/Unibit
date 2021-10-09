@@ -23,7 +23,7 @@ void assembler_assemble(char* inputFile, char* outputFile);
  * @param text char** to the raw text of the file. The first dimension is the line, and the second, chars within that
  *             line.
  */
-struct instruction_token assembler_tokenizeText(char** text);
+struct instruction_token assembler_tokenizeText(char** text, uint16_t numLines);
 
 
 /**
