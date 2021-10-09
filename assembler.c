@@ -2,33 +2,17 @@
 
 void assembler_assemble(char* inputFile, char* outputFile) {
 
+    //Step 1: Read in the file
     uint16_t numLines;
     char** linesOfText;
     fileHandler_readInFile(inputFile,&linesOfText, &numLines);
 
-
+    //Step 2: Break the file into managable tokens
     struct instruction_token head = assembler_tokenizeText(linesOfText, numLines);
-    // {
-    // printf("\n====ASSEMBLING %d LINES====\n\n",numLines);
-    //  int32_t lineLength;
+    
+    //Step 3: Scan for symbols to define and add to the dictionary
+    }
 
-    // for(int32_t i = 0; i < numLines; i++) {
-    //     printf("Line %d: \"%s\"",i,lines[i]);
-    //     switch(toupper(lines[i][0])) {
-    //         case 'N':
-    //             printf(" --> NGA");
-    //             break;
-            
-    //         case 'L':
-    //             lineLength = strlen(lines[i]);
-    //             if(lineLength < 3)
-    //                 printf("\n\nAssembler error: missing address to load from");
-    //             printf(" --> LOAD ");
-    //     }
-
-    //     printf("\n");
-    // }
-}
 
 
 struct instruction_token assembler_tokenizeText(char** text, uint16_t numLines) {
@@ -57,6 +41,8 @@ struct instruction_token assembler_tokenizeText(char** text, uint16_t numLines) 
 
     return head;
 }
+
+
 
 char* assembler_tokenizeLine(char* text) {
     if(strlen(text) == 0)
@@ -100,3 +86,4 @@ char* assembler_tokenizeLine(char* text) {
 
     return toReturn;
 }
+
