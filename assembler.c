@@ -1,7 +1,7 @@
 #include "assembler.h"
 #include "fileHandler.h"
 #include "fileHandler.c"
-//test
+
 int main(int argc, char *argv[]) {
     if(argc != 3) {
         printf("Error! needs 2 arguments: input file path, output file path");
