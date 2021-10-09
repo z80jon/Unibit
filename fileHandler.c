@@ -1,10 +1,10 @@
 #include "fileHandler.h"
 
-int fileHandler_readInFile(char* fileName, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
+int fileHandler_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
 
     //Open file
-    printf("\nReading in file '%s'",fileName);
-    FILE *fp = fopen(fileName, "r");
+    printf("\nReading in file '%s'",filePath);
+    FILE *fp = fopen(filePath, "r");
     char buff[255];
     if(fp == NULL) {
         printf("\nERROR: input file not found!");
@@ -66,4 +66,8 @@ int fileHandler_readInFile(char* fileName, char*** linesOfTextFromFile, uint32_t
     printf("\nRead in %d lines!\n",numLines);
     fclose(fp);
     return 0;
+}
+
+uint8_t fileHandler_doesFileExist(char* filePath) {
+    return access( filePath, F_OK ) == 0;
 }
