@@ -3,7 +3,7 @@
 void assembler_assemble(char* inputFile, char* outputFile) {
 
     //Step 1: Read in the file
-    uint16_t numLines;
+    uint32_t numLines;
     char** linesOfText;
     fileHandler_readInFile(inputFile,&linesOfText, &numLines);
 
@@ -27,7 +27,7 @@ struct instruction_token assembler_tokenizeText(char** text, uint16_t numLines) 
 
         char* temp = assembler_tokenizeLine(text[currentLine]);
 
-        if(strlen(temp > 0)) {
+        if(strlen(temp) > 0)) {
             pointer->instruction_text = temp;
             struct instruction_token* next = (struct instruction_token*)malloc(sizeof(struct instruction_token));            
             pointer->nextToken = next;
