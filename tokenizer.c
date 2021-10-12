@@ -83,7 +83,7 @@ uint8_t tokenizer_hasPreprocessorDirective(char* c) {
 
 uint8_t tokenizer_hasOpcode(char* c) {
     char* buf;
-    printf("\n===Searching for opcode in str '%s'===",c);
+    //printf("\n===Searching for opcode in str '%s'===",c);
     for(uint8_t i = 0; i < OPCODE_STRINGS_LENGTH; i++) {
         buf = strstr(c, OPCODE_STRINGS[i]);
         if(buf != NULL)

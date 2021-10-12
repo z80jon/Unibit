@@ -93,7 +93,7 @@ char* fileHandler_sterilizeText(char* text) {
 
         if(text[i] != ' ') {
             usedSpace = 0;
-            toReturn[j++] = toupper(text[i]);
+            toReturn[j++] = text[i];
         }
 
         i++;
