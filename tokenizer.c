@@ -9,6 +9,7 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
 
     struct program_token* head = (struct program_token*)malloc(sizeof(struct program_token));
     struct program_token* pointer;
+    struct program_token* next;
     uint16_t currentLine = 0;
     head->prevToken = NULL;
     head->nextToken = NULL;
@@ -18,27 +19,34 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
     //Step 1: create linked list of tokens of each part of the program (instructions, labels, constants, etc.)
     while(currentLine < numLines) {
         char* sterilizedLineText = fileHandler_sterilizeText(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
-
+    //TODO record line number
         if(sterilizedLineText != NULL) {
 
             if(tokenizer_hasLabel(sterilizedLineText)) {
-                tokenizer_makeLabelToken(sterilizedLineText);//TODO grab the token!
+                next = tokenizer_makeLabelToken(sterilizedLineText);//TODO grab the token!
                 for(uint8_t i = 0; i < strlen(sterilizedLineText); i++) {
                     if(sterilizedLineText[i] == ' ') {
                         sterilizedLineText = &sterilizedLineText[i+1];
                         break;
                     }
                 }
+                pointer->nextToken = next;
+                next->prevToken = pointer;
+                next->lineNumber = currentLine;
             }
             
             if(tokenizer_hasPreprocessorDirective(sterilizedLineText)) {
-                tokenizer_makePreprocessorToken(sterilizedLineText);//TODO grab the token!
+                next = tokenizer_makePreprocessorToken(sterilizedLineText);//TODO grab the token!
+                pointer->nextToken = next;
+                next->prevToken = pointer;
+                next->lineNumber = currentLine;
             } else if(tokenizer_hasOpcode(sterilizedLineText)) {
-                tokenizer_makeOpcodeToken(sterilizedLineText);//TODO grab the token!
+                next = tokenizer_makeOpcodeToken(sterilizedLineText);//TODO grab the token!
+                pointer->nextToken = next;
+                next->prevToken = pointer;
+                next->lineNumber = currentLine;
             }
 
-            pointer->instruction_text = sterilizedLineText;
-            struct program_token* next = (struct program_token*)calloc(1,sizeof(struct program_token));      
             pointer->nextToken = next;
             next->prevToken = pointer;
             pointer = next;
@@ -87,6 +95,7 @@ struct program_token* tokenizer_makePreprocessorToken(char* string) {
     toReturn->nextToken = NULL;
     toReturn->address = 0;
     toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
+    toReturn->typeOfToken = PREPROCESSOR_DIRECTIVE;
     strcpy(toReturn->instruction_text, string);
     
     return toReturn;
@@ -99,12 +108,13 @@ struct program_token* tokenizer_makeLabelToken(char* string) {
     toReturn->nextToken = NULL;
     toReturn->address = 0;
     toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
+    toReturn->typeOfToken = LABEL;
     strcpy(toReturn->instruction_text, string);
 
     //Simple fix to ensure that if an opcode does follow the label, code referencing this will ignore it.
     for(uint8_t i = 0; i < strlen(string); i++) {
         if(toReturn->instruction_text[i] == ' ') {
-            toReturn->instruction_text[i] = '\0');
+            toReturn->instruction_text[i] = '\0';
             break;
         }
     }
@@ -119,6 +129,7 @@ struct program_token* tokenizer_makeOpcodeToken(char* string) {
     toReturn->nextToken = NULL;
     toReturn->address = 0;
     toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
+    toReturn->typeOfToken = INSTRUCTION;
     strcpy(toReturn->instruction_text, string);
 
     return toReturn;

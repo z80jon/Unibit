@@ -50,6 +50,6 @@ void assembler_haltAssembly();
  * 
  * @param token the instruction to assemble
  */
-void assembler_assembleToken(struct instuction_token token);
+//void assembler_assembleToken(struct instuction_token token);
 
 #endif
