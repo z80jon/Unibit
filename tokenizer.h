@@ -7,6 +7,10 @@
 
 
 
+const char** OPCODE_STRINGS = {"l ", "load", "s", "store", "negate", "n", "jumpifzero", "jiz"};
+#define OPCODE_STRINGS_LENGTH 8
+
+
 /**
  * @brief Recursively tokenizes the entire program, doing the following:
  * 
@@ -19,19 +23,31 @@
 struct program_token* tokenizer_tokenize(char* inputFile);
 
 
+/**
+ * @brief Given a string with a preprocessor directive in it, create a new token containing the directive and return it.
+ * 
+ * @param string the string with the preprocessor directive
+ * @return struct program_token* a pointer to a new calloc'd program_token configured as a preprocessor token
+ */
+struct program_token* tokenizer_makePreprocessorToken(char* string);
+
 
 /**
- * @brief Given a string with a preprocessor directive at the start of it, extract it from the string and attach it to
- *        the end of the current program token, currentToken
+ * @brief Given a string with a label in it, create a new token containing the label and return it.
  * 
- * @warning if the input string has an invalid token, will halt assembly by callign assembler_haltError() after printing
- *          an error message.
- * 
- * @param string the string containing a preprocessor directive at its start, to be removed.
- * @param currentToken pointer to the current program token (end of linked list)
- * @return char* the input string with the preprocessor token removed
+ * @param string the string with a label at the start of it
+ * @return struct program_token* a pointer to a new calloc'd program_token configured as a label token
  */
-char* tokenizer_makePreprocessorToken(char* string, struct program_token* currentToken);
+struct program_token* tokenizer_makeLabelToken(char* string);
+
+
+/**
+ * @brief Given a string with an opcode in it, create a new token containing the opcode and return it.
+ * 
+ * @param string the string with an opcode at the start of it
+ * @return struct program_token* a pointer to a new calloc'd program_token configured as an opcode token
+ */
+struct program_token* tokenizer_makeOpcodeToken(char* string);
 
 
 /**
@@ -42,6 +58,22 @@ char* tokenizer_makePreprocessorToken(char* string, struct program_token* curren
  * @return uint8_t 1 if there is a label, else 0.
  */
 uint8_t tokenizer_hasLabel(char* c);
+
+/**
+ * @brief Checks to see if the first word in the string is a preprocessor directive
+ * 
+ * @param c the string to check the first word of
+ * @return uint8_t 1 if there is a preprocessor directive, else 0
+ */
+uint8_t tokenizer_hasPreprocessorDirective(char* c);
+
+/**
+ * @brief Checks to see if the first word in the string passed matches the predefined opcode list
+ * 
+ * @param c the string to check the first word of
+ * @return uint8_t 1 if there is an opcode, else 0
+ */
+uint8_t tokenizer_hasOpcode(char* c);
 
 
 #endif

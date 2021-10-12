@@ -6,6 +6,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <ctype.h>
 
 /**
  * @brief Reads in the file in path filePath (relative to folder program is executed in)
@@ -30,7 +32,7 @@ uint8_t fileHandler_doesFileExist(char* filePath);
  *        spaces between words (leaving just 1), etc.
  * 
  */
-char* fileHandler_sterlizeText(char* text);
+char* fileHandler_sterilizeText(char* text);
 
 
 #endif

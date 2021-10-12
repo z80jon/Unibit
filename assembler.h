@@ -7,6 +7,7 @@
 #include <string.h>
 #include "fileHandler.h"
 #include "datastructures.h"
+#include "tokenizer.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////                                       VARIABLES AND CONSTANTS                                          ////////

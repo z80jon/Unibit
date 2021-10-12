@@ -22,13 +22,19 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
         if(sterilizedLineText != NULL) {
 
             if(tokenizer_hasLabel(sterilizedLineText)) {
-                //TODO
+                tokenizer_makeLabelToken(sterilizedLineText);//TODO grab the token!
+                for(uint8_t i = 0; i < strlen(sterilizedLineText); i++) {
+                    if(sterilizedLineText[i] == ' ') {
+                        sterilizedLineText = &sterilizedLineText[i+1];
+                        break;
+                    }
+                }
             }
             
             if(tokenizer_hasPreprocessorDirective(sterilizedLineText)) {
-                //TODO
+                tokenizer_makePreprocessorToken(sterilizedLineText);//TODO grab the token!
             } else if(tokenizer_hasOpcode(sterilizedLineText)) {
-                //TODO
+                tokenizer_makeOpcodeToken(sterilizedLineText);//TODO grab the token!
             }
 
             pointer->instruction_text = sterilizedLineText;
@@ -65,8 +71,6 @@ uint8_t tokenizer_hasPreprocessorDirective(char* c) {
 }
 
 
-const char** OPCODE_STRINGS = {"l ", "load", "s", "store", "negate", "n", "jumpifzero", "jiz"};
-#define OPCODE_STRINGS_LENGTH 8
 uint8_t tokenizer_hasOpcode(char* c) {
     char* buf;
     for(uint8_t i = 0; i < OPCODE_STRINGS_LENGTH; i++) {
@@ -76,3 +80,47 @@ uint8_t tokenizer_hasOpcode(char* c) {
     }
     return 0;
 }
+
+struct program_token* tokenizer_makePreprocessorToken(char* string) {
+    struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
+    toReturn->prevToken = NULL;
+    toReturn->nextToken = NULL;
+    toReturn->address = 0;
+    toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
+    strcpy(toReturn->instruction_text, string);
+    
+    return toReturn;
+}
+
+
+struct program_token* tokenizer_makeLabelToken(char* string) {
+    struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
+    toReturn->prevToken = NULL;
+    toReturn->nextToken = NULL;
+    toReturn->address = 0;
+    toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
+    strcpy(toReturn->instruction_text, string);
+
+    //Simple fix to ensure that if an opcode does follow the label, code referencing this will ignore it.
+    for(uint8_t i = 0; i < strlen(string); i++) {
+        if(toReturn->instruction_text[i] == ' ') {
+            toReturn->instruction_text[i] = '\0');
+            break;
+        }
+    }
+
+    return toReturn;
+}
+
+
+struct program_token* tokenizer_makeOpcodeToken(char* string) {
+    struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
+    toReturn->prevToken = NULL;
+    toReturn->nextToken = NULL;
+    toReturn->address = 0;
+    toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
+    strcpy(toReturn->instruction_text, string);
+
+    return toReturn;
+}
+
