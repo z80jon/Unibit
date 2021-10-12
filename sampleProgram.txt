@@ -15,7 +15,7 @@
 
 #Note: labels don't need to have an _ in front of them.
 #Just copy [0..7] to [8..15]
-_start: load  0 
+start:  load  0 
         store 8
         load  1
         store 9
@@ -32,7 +32,7 @@ _start: load  0
         load  7
         store 15
 
-_end:   negate
+end:   negate
         jump _end
         negate
         jump _end

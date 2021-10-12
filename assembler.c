@@ -19,8 +19,8 @@ void assembler_assemble(char* inputFile, char* outputFile) {
     printf("\n\n==== Text as follows: ====\n\n");
     while(pointer != NULL) {
 
+        tokenizer_printOutToken(pointer);
         if(pointer->instruction_text != NULL) {
-            printf("%s\n",pointer->instruction_text);
             free(pointer->instruction_text);
         }
         pointer2 = pointer->nextToken;

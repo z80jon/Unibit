@@ -21,6 +21,8 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
         char* sterilizedLineText = fileHandler_sterilizeText(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
     //TODO record line number
         if(sterilizedLineText != NULL) {
+
+
             if(tokenizer_hasLabel(sterilizedLineText)) {
                 printf("Found label on line %d (text: %s)\n",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeLabelToken(sterilizedLineText);//TODO grab the token!
@@ -33,27 +35,25 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
                 pointer->nextToken = next;
                 next->prevToken = pointer;
                 next->lineNumber = currentLine;
+                pointer = next;
+                printf("LABEL TEXT: '%s'\n",pointer->instruction_text);
             }
             
             if(tokenizer_hasPreprocessorDirective(sterilizedLineText)) {
                 printf("Found preprocessor directive on line %d (text: %s)\n",currentLine+1,sterilizedLineText);
-                next = tokenizer_makePreprocessorToken(sterilizedLineText);//TODO grab the token!
+                next = tokenizer_makePreprocessorToken(sterilizedLineText);
                 pointer->nextToken = next;
                 next->prevToken = pointer;
                 next->lineNumber = currentLine;
+                pointer = next;
             } else if(tokenizer_hasOpcode(sterilizedLineText)) {
                 printf("Found opcode on line %d (text: %s)\n",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeOpcodeToken(sterilizedLineText);//TODO grab the token!
                 pointer->nextToken = next;
                 next->prevToken = pointer;
                 next->lineNumber = currentLine;
+                pointer = next;
             }
-
-            pointer->nextToken = next;
-            next->prevToken = pointer;
-            pointer = next;
-            pointer->instruction_text = NULL;
-            pointer->nextToken = NULL;
         }
 
         currentLine++;
@@ -138,3 +138,32 @@ struct program_token* tokenizer_makeOpcodeToken(char* string) {
     return toReturn;
 }
 
+
+void tokenizer_printOutToken(struct program_token* t) {
+    if(t == NULL)
+        return;
+
+    switch(t->typeOfToken) {
+
+        case INSTRUCTION:
+            printf("[INSTRUCTION token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->address,t->address,t->instruction_text);
+            break;
+
+        case LABEL:
+            printf("[LABEL token: line#: %d, address pointed to in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->address,t->address,t->instruction_text);
+            break;
+        
+        case PREPROCESSOR_DIRECTIVE:
+            printf("[PREPROCESSOR DIRECTIVE token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
+            break;
+
+        case VARIABLE_DECLARATION:
+             printf("[VARIABLE DECLARATION token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
+            break;
+        
+        default:
+            printf("[UNKNOWN token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->address,t->address,t->instruction_text);
+            break;
+    }
+    
+}

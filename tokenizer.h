@@ -75,5 +75,12 @@ uint8_t tokenizer_hasPreprocessorDirective(char* c);
  */
 uint8_t tokenizer_hasOpcode(char* c);
 
+/**
+ * @brief Prints out metadata about the token, if any exists
+ * 
+ * @param t the token to print out data from
+ */
+void tokenizer_printOutToken(struct program_token* t);
+
 
 #endif
