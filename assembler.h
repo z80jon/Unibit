@@ -13,10 +13,6 @@
 ////////                                       VARIABLES AND CONSTANTS                                          ////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//Tracks the address the next instruction in the program will go in in the ROM hex file.
-//This is a discrete variable because of the plan to allow for preprocessor statements to specify where in memory
-//an instruction goes.
-uint16_t nextInstructionAddressInROM = 0;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

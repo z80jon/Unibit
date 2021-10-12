@@ -21,8 +21,8 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
         char* sterilizedLineText = fileHandler_sterilizeText(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
     //TODO record line number
         if(sterilizedLineText != NULL) {
-
             if(tokenizer_hasLabel(sterilizedLineText)) {
+                printf("Found label on line %d (text: %s)\n",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeLabelToken(sterilizedLineText);//TODO grab the token!
                 for(uint8_t i = 0; i < strlen(sterilizedLineText); i++) {
                     if(sterilizedLineText[i] == ' ') {
@@ -36,11 +36,13 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
             }
             
             if(tokenizer_hasPreprocessorDirective(sterilizedLineText)) {
+                printf("Found preprocessor directive on line %d (text: %s)\n",currentLine+1,sterilizedLineText);
                 next = tokenizer_makePreprocessorToken(sterilizedLineText);//TODO grab the token!
                 pointer->nextToken = next;
                 next->prevToken = pointer;
                 next->lineNumber = currentLine;
             } else if(tokenizer_hasOpcode(sterilizedLineText)) {
+                printf("Found opcode on line %d (text: %s)\n",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeOpcodeToken(sterilizedLineText);//TODO grab the token!
                 pointer->nextToken = next;
                 next->prevToken = pointer;
@@ -67,8 +69,8 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
 
 uint8_t tokenizer_hasLabel(char* c) {
     uint8_t index = 0;
-    while(c[index] != '\0' && c[index] != ' ' && c[index] != '\r' && c[index] != '\n') {
-        if(c[index] == ':')
+    while(c[index] != '\0' && c[index] != ' ' && c[index] != '\r' && c[index] != '\n' && index < strlen(c)) {
+        if(c[index++] == ':')
             return 1;
     }
     return 0;
@@ -81,6 +83,7 @@ uint8_t tokenizer_hasPreprocessorDirective(char* c) {
 
 uint8_t tokenizer_hasOpcode(char* c) {
     char* buf;
+    printf("\n===Searching for opcode in str '%s'===",c);
     for(uint8_t i = 0; i < OPCODE_STRINGS_LENGTH; i++) {
         buf = strstr(c, OPCODE_STRINGS[i]);
         if(buf != NULL)

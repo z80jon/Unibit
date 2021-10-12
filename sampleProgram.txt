@@ -15,25 +15,25 @@
 
 #Note: labels don't need to have an _ in front of them.
 #Just copy [0..7] to [8..15]
-_start: LOAD  0 
-        STORE 8
-        LOAD  1
-        STORE 9
-        LOAD  2
-        STORE 10
-        LOAD  3
-        STORE 11
-        LOAD  4
-        STORE 12
-        LOAD  5
-        STORE 13
-        LOAD  6
-        STORE 14
-        LOAD  7
-        STORE 15
+_start: load  0 
+        store 8
+        load  1
+        store 9
+        load  2
+        store 10
+        load  3
+        store 11
+        load  4
+        store 12
+        load  5
+        store 13
+        load  6
+        store 14
+        load  7
+        store 15
 
-_end:   NEGATE
-        JUMP _end
-        NEGATE
-        JUMP _end
+_end:   negate
+        jump _end
+        negate
+        jump _end
 

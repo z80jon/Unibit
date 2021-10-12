@@ -1,14 +1,18 @@
-CXX = g++
-CXXFLAGS = -Wall -Werror -pedantic -std=c99
+CC = gcc
+CFLAGS = -Wall -Werror -pedantic -std=c99 -g
 
 SRC = 
 OBJ = $(SRC:.cc=.o)
-EXEC = main
+EXEC = assembler
+
+default: all
 
 all: $(EXEC)
 
+
+
 $(EXEC): $(OBJ)
-	$(CXX) $(LDFLAGS) -o $@ $(OBJ) $(LBLIBS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LBLIBS)
 
 clean:
 	rm -rf $(OBJ) $(EXEC)

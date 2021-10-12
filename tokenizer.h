@@ -7,7 +7,7 @@
 
 
 
-const char* OPCODE_STRINGS[] = {"l ", "load", "s", "store", "negate", "n", "jumpifzero", "jiz"};
+static const char* OPCODE_STRINGS[] = {"l ", "load", "s", "store", "negate", "n", "jumpifzero", "jiz"};
 #define OPCODE_STRINGS_LENGTH 8
 
 
