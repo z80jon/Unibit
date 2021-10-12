@@ -1,22 +1,18 @@
-#ifndef INSTRUCTION_TOKEN_H_
-#define INSTRUCTION_TOKEN_H_
+#ifndef DATASTRUCTURES_H_
+#define DATASTRUCTURES_H_
 
 #include <stdint.h>
 
-/**
- * @brief Defines what stage an instruction_token is at in the assembly process
- * 
- * INIT: the text from the instruction has been put into char* instruction_text
- * DONE: The instruction has finished being assembled, and binaryOutput has valid binary data.
- * 
- */
-enum tokenStage{INIT,
-                DONE};
+enum tokenType{INSTRUCTION, LABEL, PREPROCESSOR_DIRECTIVE, VARIABLE_DECLARATION};
 
-struct instruction_token {
+enum opCode{LOAD, STORE, NEGATE, JUMPIFZERO};
+
+struct program_token {
     char* instruction_text; //the raw text of the code--minus spaces and /r/n--between one ; and the next ;.
-    uint16_t binaryOutput;  //The output machine code post-assembly
-    struct instruction_token* nextToken; //pointer to the next token in the chain. NULL = end of code
+    enum opCode opcode;     //The opcode the CPU will execute
+    uint16_t address;       //The address to jump to or load/store from. Optional in negate instructions.
+    struct program_token* nextToken; //pointer to the next token in the chain. NULL = end of code
+    struct program_token* prevToken; //pointer to the previous token in the chain. NULL = start of code.
 };
 
 #endif

@@ -1,12 +1,18 @@
 This assembler works in several steps, in the interest of simplicity of design, debugging, and implementation:
 
 1) Read in file
-2) throw away comment lines and /r/n
-3) store every line of meaningful code (with extra spaces removed) in a linked list
-4) preprocessor + variable creation, value assignment
-5) binary generation
-6) output file generation.
 
+2) throw away comment lines and /r/n
+
+3) store every line of meaningful code (with extra spaces removed) in a linked list
+(note: any included files are pulled in at this stage)
+3b) preprocessor + variable / macro handling, note down labels
+
+4) address resolution
+
+5) binary generation
+
+6) output file generation in Intel hex format
 
 
 

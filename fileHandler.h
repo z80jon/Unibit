@@ -25,7 +25,12 @@ int fileHandler_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t
  */
 uint8_t fileHandler_doesFileExist(char* filePath);
 
-
+/**
+ * @brief takes a line of text, and returns only the useful parts of it, stripping out comments, blank lines,
+ *        spaces between words (leaving just 1), etc.
+ * 
+ */
+char* fileHandler_sterlizeText(char* text);
 
 
 #endif
