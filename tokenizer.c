@@ -59,9 +59,11 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
         currentLine++;
     }
 
+    //deallocate memory for the file text we just finished processing
     for(uint16_t i = 0; i < numLines; i++) {
-
+        free(linesOfText[i]);
     }
+    free(linesOfText);
 
     return head;
 }
@@ -117,7 +119,7 @@ struct program_token* tokenizer_makeLabelToken(char* string) {
     //Simple fix to ensure that if an opcode does follow the label, code referencing this will ignore it.
     for(uint8_t i = 0; i < strlen(string); i++) {
         if(toReturn->instruction_text[i] == ' ') {
-            toReturn->instruction_text[i] = '\0';
+            toReturn->instruction_text[i-1] = '\0';
             break;
         }
     }

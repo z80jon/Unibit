@@ -5,7 +5,6 @@ int fileHandler_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t
     //Open file
     printf("\nReading in file '%s'",filePath);
     FILE *fp = fopen(filePath, "r");
-    char buff[255];
     if(fp == NULL) {
         printf("\nERROR: input file not found!");
         return 1;

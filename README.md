@@ -1,36 +1,25 @@
+Welcome to the Unibit assembler project! This is an effort to create a minimalist assembler for the UNIBIT CPU architecture.
+I should publish a github repo with specifications of that architecture at some point, but anyhow, this is the repo for
+a barebones assembler created to assist in the development of software/software libraries for the CPU. It is written more
+with emphasis on ease of understanding and modularity/adaptability. If you're looking to write your own CPU assembler,
+hopefully this will make a good starting point if you fork it.
+
+The assembler is currently very early in development, and doesn't actually produce any executible code. It does, however,
+produce meaningful output when the sampleProgram.txt demo file is passed as the input argument.
+
 This assembler works in several steps, in the interest of simplicity of design, debugging, and implementation:
 
-1) Read in file
+1) Read in file, throwing away comment lines and /r/n
 
-2) throw away comment lines and /r/n
+2) Store labels, preprocessor directives, opcodes, etc. in discrete entries in a linked list
 
-3) store every line of meaningful code (with extra spaces removed) in a linked list
-(note: any included files are pulled in at this stage)
-3b) preprocessor + variable / macro handling, note down labels
+3) Perform pre-assembly activities, which include:
+------checking the syntax of each instruction/label/preprocessor directive/etc.
+------expanding macros (if applicable) (tentative / planned feature)
+------noting down labels, variables, etc. in a dictionary
 
-4) address resolution
+4) Determine where to place instructions in ROM, and variables, in RAM.
 
-5) binary generation
+5) address resolution of references to labels and variables
 
 6) output file generation in Intel hex format
-
-
-
-In an effort to keep things as simple as possible, only several files are used:
-
-main.c:
-    -handles interface with user
-    -kicks off process by calling assembler_assemble
-
-fileHandler.c: 
-    -handles file reading and writing
-    -library; can be told to fetch file contents (returns them nicely) or write serieses of tokens to a file
-
-assembler.c:
-    -orchestrates the actual assembly process.
-
-dictionary.c:
-    -handles remembering labels, variables, macros, etc.
-
-datastructures.c:
-    -handles any data structure-related functions having to do with tokens, etc.

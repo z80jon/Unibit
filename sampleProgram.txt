@@ -1,19 +1,5 @@
-###############
-#  Constants  #
-###############
-.data
 
-###############
-#  Variables  #
-###############
-.bss
 
-###############
-#    Code     #
-###############
-.text
-
-#Note: labels don't need to have an _ in front of them.
 #Just copy [0..7] to [8..15]
 start:  load  0 
         store 8
