@@ -9,17 +9,15 @@ produce meaningful output when the sampleProgram.txt demo file is passed as the 
 
 This assembler works in several steps, in the interest of simplicity of design, debugging, and implementation:
 
-1) Read in file, throwing away comment lines and /r/n
+1) Read in file, throwing away comment lines and carriage returns. Store labels, opcodes, etc. in discrete entries in a linked list. Pre-Processor runs at this time, inserting any files in-line exactly where the include statement is found.
 
-2) Store labels, preprocessor directives, opcodes, etc. in discrete entries in a linked list
+2) Populate a dictionary with the names of variables and labels
+------If a variable has an explicit address in the code, it is resolved against other predefined address variables.
 
-3) Perform pre-assembly activities, which include:
-------checking the syntax of each instruction/label/preprocessor directive/etc.
-------expanding macros (if applicable) (tentative / planned feature)
-------noting down labels, variables, etc. in a dictionary
+3) Determine where to place instructions in ROM
 
-4) Determine where to place instructions in ROM, and variables, in RAM.
+4) Determine where to place variables in RAM (if their address was not explicitly defined), scanning the file tokens and removing the variable declarations along the way.
 
-5) address resolution of references to labels and variables
+4) address resolution of references to labels and variables
 
-6) output file generation in Intel hex format
+5) output file generation in Intel hex format

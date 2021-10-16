@@ -1,16 +1,27 @@
 #include "assembler.h"
 
-void assembler_assemble(char* inputFile, char* outputFile) {
+void assembler_run(char* inputFile, char* outputFile) {
 
-    //Step 2a: Break the file into managable tokens of text. Create dictionary entries and fill in opcode enums where possible.
+    //1) Read in file, throwing away comment lines and carriage returns. Store labels, preprocessor directives, opcodes, etc. in discrete entries in a linked list
     printf("Tokenizing file...\n");
-    struct program_token* head = tokenizer_tokenize(inputFile);//assembler_tokenizeText(linesOfText, numLines);
+    struct program_token* head = tokenizer_tokenize(inputFile);//assembler_tokenizeText(linesOfText, numLines)3;
     printf("Tokenization complete!\n");
     //Step 2b: Begin *ROM* address resolution (where in memory each line of code will go).
 
     //Step 3: Begin address resolution
 
 
+    //2) Perform pre-assembly activities, which include:
+    //------checking the syntax of each instruction/label/preprocessor directive/etc.
+    //------expanding macros (if applicable) (tentative / planned feature)
+    //------noting down labels, variables, etc. in a dictionary
+
+    //3) Determine where to place instructions in ROM, and variables, in RAM.
+
+    //4) address resolution of references to labels and variables
+
+    //5) output file generation in Intel hex format
+    
 
 
     //Step 7: Cleanup

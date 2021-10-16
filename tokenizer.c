@@ -100,7 +100,7 @@ struct program_token* tokenizer_makePreprocessorToken(char* string) {
     toReturn->nextToken = NULL;
     toReturn->address = 0;
     toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
-    toReturn->typeOfToken = PREPROCESSOR_DIRECTIVE;
+    toReturn->tokenType = PROGTOK__PREPROC_DIR;
     strcpy(toReturn->instruction_text, string);
     
     return toReturn;
@@ -113,7 +113,7 @@ struct program_token* tokenizer_makeLabelToken(char* string) {
     toReturn->nextToken = NULL;
     toReturn->address = 0;
     toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
-    toReturn->typeOfToken = LABEL;
+    toReturn->tokenType = PROGTOK__LABEL;
     strcpy(toReturn->instruction_text, string);
 
     //Simple fix to ensure that if an opcode does follow the label, code referencing this will ignore it.
@@ -134,7 +134,7 @@ struct program_token* tokenizer_makeOpcodeToken(char* string) {
     toReturn->nextToken = NULL;
     toReturn->address = 0;
     toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
-    toReturn->typeOfToken = INSTRUCTION;
+    toReturn->tokenType = PROGTOK__INSTRUCTION;
     strcpy(toReturn->instruction_text, string);
 
     return toReturn;
@@ -145,21 +145,21 @@ void tokenizer_printOutToken(struct program_token* t) {
     if(t == NULL)
         return;
 
-    switch(t->typeOfToken) {
+    switch(t->tokenType) {
 
-        case INSTRUCTION:
+        case PROGTOK__INSTRUCTION:
             printf("[INSTRUCTION token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->address,t->address,t->instruction_text);
             break;
 
-        case LABEL:
+        case PROGTOK__LABEL:
             printf("[LABEL token: line#: %d, address pointed to in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->address,t->address,t->instruction_text);
             break;
         
-        case PREPROCESSOR_DIRECTIVE:
+        case PROGTOK__PREPROC_DIR:
             printf("[PREPROCESSOR DIRECTIVE token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
             break;
 
-        case VARIABLE_DECLARATION:
+        case PROGTOK__VARIABLE_DEC:
              printf("[VARIABLE DECLARATION token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
             break;
         

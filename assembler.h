@@ -27,7 +27,7 @@
  * @param inputFile  Path to the input file of code to be assembled.
  * @param outputFile Path to output the binary ROM data to.
  */
-void assembler_assemble(char* inputFile, char* outputFile);
+void assembler_run(char* inputFile, char* outputFile);
 
 /**
  * @brief takes in the raw lines of text from a file and makes 
