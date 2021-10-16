@@ -2,21 +2,28 @@
 #define LIBRARY_H_
 
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "datastructures.h"
 
 //Library Error return values
-#define LIBRARY_ERROR__NO_ERRORS        0 ///Function call exited normally
-#define LIBRARY_ERROR__NAME_NOT_FOUND   1 ///The name of the requested variable was not found
-#define LIBRARY_ERROR__NAME_EXISTS      2 ///The name of the variable or other entity being added to the library is already in use
-#define LIBRARY_ERROR__SYNTAX           3 ///The syntax ot the variable or other enttiy being added to the library is not valid. (eg, '%' is in the name of a variable)
-#define LIBRARY_ERROR__ADDR_CONFLICT    4 ///The variable with a specified address encroaches on an existing variable's address space.
-#define LIBRARY_ERROR__ADDR_UNASSIGNED  5 ///The address for the specified variable has not yet been assigned. TODO define var addr space assign func
-#define LIBRARY_ERROR__MEMORY_TRAFFIC   6 ///The variable address assigning routine has failed to allocate address space to all variables.
+#define LIBRARY_STATUS__NO_ERRORS        0 ///Function call exited normally
+#define LIBRARY_STATUS__NAME_NOT_FOUND   1 ///The name of the requested variable was not found
+#define LIBRARY_STATUS__NAME_EXISTS      2 ///The name of the variable or other entity being added to the library is already in use
+#define LIBRARY_STATUS__SYNTAX_ERROR     3 ///The syntax ot the variable or other enttiy being added to the library is not valid. (eg, '%' is in the name of a variable)
+#define LIBRARY_STATUS__ADDR_CONFLICT    4 ///The variable with a specified address encroaches on an existing variable's address space.
+#define LIBRARY_STATUS__ADDR_UNASSIGNED  5 ///The address for the specified variable has not yet been assigned. TODO define var addr space assign func
+#define LIBRARY_STATUS__MEMORY_TRAFFIC   6 ///The variable address assigning routine has failed to allocate address space to all variables.
+#define LIBRARY_STATUS__UNKNOWN_ERROR    7 ///This error should never occur unless something is wrong in memory allocation or the library code.
+#define LIBRARY_STATUS__TOKEN_IS_LABEL   8 
+#define LIBRARY_STATUS__TOKEN_IS_VAR     9
 
+static struct library_token* libraryTokens = NULL; ///Pointer to array of Library tokens
+static uint16_t numLibraryTokens = 0;           ///Holds the current number of library tokens
 
-static struct library_token* libraryTokens; ///Pointer to array of Library tokens
-static uint16_t numLibraryTokens;           ///Holds the current number of library tokens
-
+const uint8_t VALID_NON_ALPHANUM_CHARS_LEN = 1;
+const char VALID_NON_ALPHANUM_CHARS[VALID_NON_ALPHANUM_CHARS_LEN] = {'_'};
 
 //====================== Variable functions ======================//
 
@@ -26,7 +33,7 @@ static uint16_t numLibraryTokens;           ///Holds the current number of libra
  * @param name the name of the variable
  * @param numBits the number of bits to allocate to the variable
  * 
- * @return uint8_t LIBRARY_ERROR__NO_ERRORS, LIBRARY_ERROR__NAME_EXISTS, LIBRARY_ERROR__SYNTAX
+ * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
 uint8_t library_addVariable(char* name, uint16_t numBits);
 
@@ -37,7 +44,7 @@ uint8_t library_addVariable(char* name, uint16_t numBits);
  * @param name the name of the variable
  * @param numBits the number of bits to allocate to the variable
  * @param address the starting address for the variable (address increases with numBits)
- * @return uint8_t LIBRARY_ERROR__NO_ERRORS, LIBRARY_ERROR__NAME_EXISTS, LIBRARY_ERROR__SYNTAX, LIBRARY_ERROR__ADDR_CONFLICT
+ * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX, LIBRARY_STATUS__ADDR_CONFLICT
  */
 uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t address);
 
@@ -47,7 +54,7 @@ uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t ad
  * 
  * @param name the name of the variable
  * @param address a pointer which will be populated with the address
- * @return uint8_t LIBRARY_ERROR__NO_ERRORS, LIBRARY_ERROR__NAME_NOT_FOUND, LIBRARY_ERROR__ADDR_UNASSIGNED
+ * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_NOT_FOUND, LIBRARY_STATUS__ADDR_UNASSIGNED
  */
 uint8_t library_getVariableAddress(char* name, uint16_t* address);
 
@@ -55,9 +62,9 @@ uint8_t library_getVariableAddress(char* name, uint16_t* address);
 /**
  * @brief Goes through the variables with no address assigned to them and assigns address space.
  * 
- * @return uint8_t LIBRARY_ERROR__NO_ERRORS, LIBRARY_ERROR__MEMORY_TRAFFIC
+ * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__MEMORY_TRAFFIC
  */
-uint8_t library__setVariableAddresses();
+uint8_t library_setVariableAddresses();
 
 
 //====================== Label functions ======================//
@@ -66,7 +73,7 @@ uint8_t library__setVariableAddresses();
  * @brief Adds a label to the dictionary, but does not define its address yet.
  * 
  * @param name the name of the label
- * @return uint8_t LIBRARY_ERROR__NO_ERRORS, LIBRARY_ERROR__NAME_EXISTS, LIBRARY_ERROR__SYNTAX
+ * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
 uint8_t library_addLabel(char* name);
 
@@ -76,7 +83,7 @@ uint8_t library_addLabel(char* name);
  * 
  * @param name the name of the label
  * @param rom_address the exact ROM address that the label points to
- * @return uint8_t LIBRARY_ERROR__NO_ERRORS, LIBRARY_ERROR__NAME_EXISTS, LIBRARY_ERROR__SYNTAX
+ * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
 uint8_t library_addLabelWithAddress(char* name, uint16_t rom_address);
 
@@ -86,7 +93,7 @@ uint8_t library_addLabelWithAddress(char* name, uint16_t rom_address);
  * 
  * @param name the name of the label to set the address of
  * @param rom_address the address to set the label to point to
- * @return uint8_t LIBRARY_ERROR__NO_ERRORS, LIBRARY_ERROR__NAME_NOT_FOUND, 
+ * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_NOT_FOUND, 
  */
 uint8_t library_setLabelAddress(char* name, uint16_t rom_address);
 
@@ -109,6 +116,8 @@ uint8_t library_getLabelAddress(char* name, uint16_t* rom_address);
 void library__free_memory();
 
 
+enum libraryTokenType library_getTokenType(char* name);
+
 //====================== Internal-use functions ======================//
 
 /**
@@ -123,9 +132,28 @@ struct library_token* library_internal__getToken(char* name);
  * @brief Checks the syntax of the name against existing naming conventions.
  * 
  * @param name the name to check the syntax of
- * @return uint8_t LIBRARY_ERROR__NO_ERRORS, LIBRARY_ERROR__SYNTAX
+ * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__SYNTAX
  */
 uint8_t library_internal__check_syntax_of_name(char* name);
+
+/**
+ * @brief Handles reallocating memory and adding a new token to the array. When complete, the new blank token is at the
+ *        end of the array. It also checks the syntax of the token, and verifies that the name is not already in use.
+ * 
+ * @param name the name the token will refer to (be it a label, variable, etc)
+ * @returns LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__SYNTAX_ERROR, LIBRARY_STATUS__NAME_EXISTS
+ */
+uint8_t library_internal__add_generic_token(char* name);
+
+/**
+ * @brief Checks for RAM address conflicts with the specified starting address and number of bits following it to see if
+ *        any other variables are already occupying some or all of said space.
+ * 
+ * @param numBits the number of bits following the starting address
+ * @param address the address of the first bit in the series of numBits bits.
+ * @return LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__ADDR_CONFLICT
+ */
+uint8_t library_internal__check_for_RAM_address_conflicts(uint16_t numBits, uint16_t address);
 
 
 

@@ -5,7 +5,7 @@
 
 enum programTokenType{PROGTOK__INSTRUCTION, PROGTOK__LABEL, PROGTOK__PREPROC_DIR, PROGTOK__VARIABLE_DEC};
 
-enum libraryTokenType{LIBTOK__LABEL, LIBTOK__VARIABLE};
+enum libraryTokenType{LIBTOK_UNDEFINED, LIBTOK__LABEL, LIBTOK__VARIABLE};
 
 struct program_token {
     char* instruction_text;             ///the raw text of the code--minus spaces and /r/n--between one ; and the next ;.
@@ -23,7 +23,8 @@ struct library_token {
     char* name;
     enum libraryTokenType libraryTokenType;
     uint16_t address;
-    uint16_t size_if_variable
+    uint16_t size_if_variable;
+    uint8_t address_defined;
 };
 
 #endif
