@@ -51,6 +51,15 @@ struct program_token* tokenizer_makeOpcodeToken(char* string);
 
 
 /**
+ * @brief Given a string with a variable declaration inb it, create a new token containing the variable info and return it.
+ * 
+ * @param string the string with the variable declaration at the start of it
+ * @return struct program_token* a pointer to a new calloc'd program_token configured as a variable declaration token.
+ */
+struct program_token* tokenizer_makeVariableDeclarationToken(char* string);
+
+
+/**
  * @brief Checks to see if the first word in the string passed is a label or not. Also performs sanity check on label
  *        naming scheme.
  * 
@@ -74,6 +83,14 @@ uint8_t tokenizer_hasPreprocessorDirective(char* c);
  * @return uint8_t 1 if there is an opcode, else 0
  */
 uint8_t tokenizer_hasOpcode(char* c);
+
+/**
+ * @brief Checks to see if the first word in the string is the beginning of a variable declaration
+ * 
+ * @param c the string to check the first word of
+ * @return uint8_t 1 if there is a variable declaration, else 0
+ */
+uint8_t tokenizer_hasVariable(char* c);
 
 /**
  * @brief Prints out metadata about the token, if any exists

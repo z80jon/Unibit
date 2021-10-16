@@ -94,6 +94,15 @@ uint8_t tokenizer_hasOpcode(char* c) {
     return 0;
 }
 
+
+uint8_t tokenizer_hasVariable(char* c) {
+    char* buf = strstr(c, "var");
+    if(buf != NULL)
+        return 1;
+    return 0;
+}
+
+
 struct program_token* tokenizer_makePreprocessorToken(char* string) {
     struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
     toReturn->prevToken = NULL;
@@ -140,6 +149,17 @@ struct program_token* tokenizer_makeOpcodeToken(char* string) {
     return toReturn;
 }
 
+struct program_token* tokenizer_makeVariableDeclarationToken(char* string) {
+    struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
+    toReturn->prevToken = NULL;
+    toReturn->nextToken = NULL;
+    toReturn->address = 0;
+    toReturn->instruction_text = (char*)calloc(strlen(&(string[4]))+1, sizeof(char));
+    toReturn->tokenType = PROGTOK__VARIABLE_DEC;
+    strcpy(toReturn->instruction_text, &string[4]); //Copy over everything after "var "
+
+    return toReturn;
+}
 
 void tokenizer_printOutToken(struct program_token* t) {
     if(t == NULL)

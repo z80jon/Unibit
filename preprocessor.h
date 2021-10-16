@@ -4,6 +4,7 @@
 #include "tokenizer.h"
 #include "library.h"
 #include "datastructures.h"
+#include <stdio.h>
 
 /**
  * @brief Runs the preprocessor, performing the following actions:

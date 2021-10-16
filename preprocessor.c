@@ -12,6 +12,7 @@ uint8_t preprocessor_run(struct program_token* head) {
             //Variable syntax:
             //var <name> <bits> <address_to_store_in_RAM(optional)>
             
+            
             //TODO add variable to library
             //TODO remove variable token from linked list
         }
