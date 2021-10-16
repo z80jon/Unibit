@@ -11,13 +11,14 @@
 #define LIBRARY_STATUS__NO_ERRORS        0 ///Function call exited normally
 #define LIBRARY_STATUS__NAME_NOT_FOUND   1 ///The name of the requested variable was not found
 #define LIBRARY_STATUS__NAME_EXISTS      2 ///The name of the variable or other entity being added to the library is already in use
-#define LIBRARY_STATUS__SYNTAX_ERROR     3 ///The syntax ot the variable or other enttiy being added to the library is not valid. (eg, '%' is in the name of a variable)
-#define LIBRARY_STATUS__ADDR_CONFLICT    4 ///The variable with a specified address encroaches on an existing variable's address space.
-#define LIBRARY_STATUS__ADDR_UNASSIGNED  5 ///The address for the specified variable has not yet been assigned. TODO define var addr space assign func
-#define LIBRARY_STATUS__MEMORY_TRAFFIC   6 ///The variable address assigning routine has failed to allocate address space to all variables.
-#define LIBRARY_STATUS__UNKNOWN_ERROR    7 ///This error should never occur unless something is wrong in memory allocation or the library code.
-#define LIBRARY_STATUS__TOKEN_IS_LABEL   8 
-#define LIBRARY_STATUS__TOKEN_IS_VAR     9
+#define LIBRARY_STATUS__INVALID_SIZE     3 ///A variable with size 0 was attempted to be created.
+#define LIBRARY_STATUS__SYNTAX_ERROR     4 ///The syntax ot the variable or other enttiy being added to the library is not valid. (eg, '%' is in the name of a variable)
+#define LIBRARY_STATUS__ADDR_CONFLICT    5 ///The variable with a specified address encroaches on an existing variable's address space.
+#define LIBRARY_STATUS__ADDR_UNASSIGNED  6 ///The address for the specified variable has not yet been assigned. TODO define var addr space assign func
+#define LIBRARY_STATUS__MEMORY_TRAFFIC   7 ///The variable address assigning routine has failed to allocate address space to all variables.
+#define LIBRARY_STATUS__UNKNOWN_ERROR    8 ///This error should never occur unless something is wrong in memory allocation or the library code.
+#define LIBRARY_STATUS__TOKEN_IS_LABEL   9 
+#define LIBRARY_STATUS__TOKEN_IS_VAR     10
 
 static struct library_token* libraryTokens = NULL; ///Pointer to array of Library tokens
 static uint16_t numLibraryTokens = 0;           ///Holds the current number of library tokens

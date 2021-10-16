@@ -2,6 +2,7 @@
 
 
 uint8_t library_addVariable(char* name, uint16_t numBits) {
+    if(numBits == 0) return LIBRARY_STATUS__INVALID_SIZE;
     uint8_t errorCode = library_internal__add_generic_token(name);
     if(errorCode != LIBRARY_STATUS__NO_ERRORS)
         return errorCode;
@@ -15,6 +16,7 @@ uint8_t library_addVariable(char* name, uint16_t numBits) {
 
 
 uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t address) {
+    if(numBits == 0) return LIBRARY_STATUS__INVALID_SIZE;
     if(library_internal__check_for_RAM_address_conflicts(numBits, address) != LIBRARY_STATUS__NO_ERRORS)
         return LIBRARY_STATUS__ADDR_CONFLICT;
     
