@@ -27,9 +27,10 @@ uint16_t parser(char* text) {
 
         else {
             printf("\n\n[FATAL ERROR]: [Parser]: Unable to resolve meaning of token '%s'",token);
+            return 0xFFFF;
         }
 
-        printf("\n[Parser]: [DEBUG]: Received string '%s' as input. Interpreted to have value of: %d / 0x%X.",token, current_value, current_value);
+        printf("\n[Parser]: Translated '%s' to: %d/0x%X.",text, current_value, current_value);
 
     //    token = strtok(NULL," ");
     //    firstToken = 0;

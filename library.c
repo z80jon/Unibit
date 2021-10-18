@@ -28,6 +28,7 @@ uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t ad
     token->size_if_variable = numBits;
     token->libraryTokenType = LIBTOK__VARIABLE;
     token->address = address;
+    token->address_defined = 1;
 
     return LIBRARY_STATUS__NO_ERRORS;
 }
