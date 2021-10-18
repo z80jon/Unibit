@@ -1,6 +1,7 @@
 #ifndef LIBRARY_H_
 #define LIBRARY_H_
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,12 +20,13 @@
 #define LIBRARY_STATUS__UNKNOWN_ERROR    8 ///This error should never occur unless something is wrong in memory allocation or the library code.
 #define LIBRARY_STATUS__TOKEN_IS_LABEL   9 
 #define LIBRARY_STATUS__TOKEN_IS_VAR     10
+#define LIBRARY_STATUS__DANGLING_LABEL   11 ///This error will occur if a label is declared at the end of a program with no instructions following it.
 
 static struct library_token* libraryTokens = NULL; ///Pointer to array of Library tokens
 static uint16_t numLibraryTokens = 0;           ///Holds the current number of library tokens
 
-const uint8_t VALID_NON_ALPHANUM_CHARS_LEN = 1;
-const char VALID_NON_ALPHANUM_CHARS[VALID_NON_ALPHANUM_CHARS_LEN] = {'_'};
+static const uint8_t VALID_NON_ALPHANUM_CHARS_LEN = 1;
+static const char VALID_NON_ALPHANUM_CHARS[] = {'_'};
 
 //====================== Variable functions ======================//
 
@@ -65,7 +67,7 @@ uint8_t library_getVariableAddress(char* name, uint16_t* address);
  * 
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__MEMORY_TRAFFIC
  */
-uint8_t library_setVariableAddresses();
+uint8_t library_assignVariableAddresses();
 
 
 //====================== Label functions ======================//
@@ -98,6 +100,7 @@ uint8_t library_addLabelWithAddress(char* name, uint16_t rom_address);
  */
 uint8_t library_setLabelAddress(char* name, uint16_t rom_address);
 
+
 /**
  * @brief returns the address of the label specified
  * 
@@ -107,6 +110,14 @@ uint8_t library_setLabelAddress(char* name, uint16_t rom_address);
  */
 uint8_t library_getLabelAddress(char* name, uint16_t* rom_address);
 
+
+/**
+ * @brief Runs through the program, ensuring that the address each label in the dictionary points to is up to date.
+ * 
+ * @param head the head node of the program
+ * @return LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__UNKNOWN_ERROR LIBRARY_STATUS__DANGLING_LABEL
+ */
+uint8_t library_resolveLabelAddresses(struct program_token* head);
 
 //====================== Misc functions ======================//
 

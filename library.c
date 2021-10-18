@@ -45,7 +45,7 @@ uint8_t library_getVariableAddress(char* name, uint16_t* address) {
 }
 
 
-uint8_t library_setVariableAddresses() {
+uint8_t library_assignVariableAddresses() {
     for(uint16_t i = 0; i < numLibraryTokens; i++) {
         struct library_token* token = &(libraryTokens[i]);
         if(token->libraryTokenType == LIBTOK__VARIABLE && token->address_defined == 0) {
@@ -133,14 +133,64 @@ uint8_t library_getLabelAddress(char* name, uint16_t* rom_address) {
 }
 
 
+uint8_t library_resolveLabelAddresses(struct program_token* head) {
+    struct program_token* labelPointer; //Advances along the linked list seeking out labels to point to opcode ROM addresses
+    struct program_token* opcodePointer;//Advances along the linked list just ahead of labelPointer to find the opcode the label should point to.
+
+    labelPointer = head;
+    opcodePointer = head;
+    while(labelPointer != NULL) {
+        if(labelPointer->tokenType == PROGTOK__LABEL) {
+            opcodePointer = labelPointer->nextToken;
+            while(opcodePointer->tokenType != PROGTOK__INSTRUCTION && opcodePointer != NULL) {
+                opcodePointer = opcodePointer->nextToken;
+            }
+
+            //Bad user input case: a label was declared and that's just the end of the program--no opcodes follow
+            if(opcodePointer == NULL) {
+                return LIBRARY_STATUS__DANGLING_LABEL;
+            }
+
+            if(library_setLabelAddress(labelPointer->instruction_text, opcodePointer->address) != LIBRARY_STATUS__NO_ERRORS) {
+                printf("\n[Library]: [FATAL ERROR]: Tried to set address of label '%s', but it was not in the dictionary! This should only ever be printed if something has gone wrong with the library code.",labelPointer->instruction_text);
+                return LIBRARY_STATUS__UNKNOWN_ERROR;
+            }
+
+        }
+        labelPointer = labelPointer->nextToken;
+    }
+
+    return LIBRARY_STATUS__NO_ERRORS;
+}
+
 //====================== Misc functions ======================//
 
 void library__free_memory() {
+    printf("\n======== Library Tokens =======\n");
+
+    //(For debug purposes: print out the token info):
+    //First: label tokens:
+    printf("\n== Label Tokens ==\n");
+    for(uint16_t i = 0; i < numLibraryTokens; i++) {
+        if(libraryTokens[i].libraryTokenType == LIBTOK__LABEL) {
+            printf("Label name: %s, address: %d/0x%X\n",libraryTokens[i].name, libraryTokens[i].address,libraryTokens[i].address);
+        }
+    }
+
+
+    //Next: variable tokens:
+    printf("\n== Variable Tokens ==\n");
+    for(uint16_t i = 0; i < numLibraryTokens; i++) {
+        if(libraryTokens[i].libraryTokenType == LIBTOK__VARIABLE) {
+            printf("Variable name: %s, number of bits: %d, address: %d/0x%X\n",libraryTokens[i].name, libraryTokens[i].size_if_variable,libraryTokens[i].address,libraryTokens[i].address);
+        }
+    }
+
     for(uint16_t i = 0; i < numLibraryTokens; i++) {
         free(libraryTokens[i].name);
     }
 
-    free(libraryTokens); 
+    free(libraryTokens);
 }
 
 

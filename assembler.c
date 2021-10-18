@@ -2,29 +2,31 @@
 
 void assembler_run(char* inputFile, char* outputFile) {
 
-    //1) Read in file, throwing away comment lines and carriage returns. Store labels, preprocessor directives, opcodes, etc. in discrete entries in a linked list
+    //1) Read in main file, while at the same time...
+    //   >removing comments, extra whitespaces, and blank/empty lines
+    //   >storing opcodes and labels in a linked list
+    //   >removing (and parsing) preprocessor statements and acting on them accordingly
+    //   >removing variable declarations and adding them to a library
+    //   >adding labels to a library to be resolved later (once addresses are assigned)
     printf("Tokenizing file...\n");
-    struct program_token* head = tokenizer_tokenize(inputFile);//assembler_tokenizeText(linesOfText, numLines)3;
+    head = tokenizer_tokenize(inputFile);//assembler_tokenizeText(linesOfText, numLines)3;
     printf("Tokenization complete!\n");
-    //Step 2b: Begin *ROM* address resolution (where in memory each line of code will go).
 
-    //Step 3: Begin address resolution
+    if(preprocessor_run(head) != 0) {
+        printf("[FATAL ERROR]: [Assembler]: Preprocessor failed!\n");
+    }
+
+    library_assignVariableAddresses();
+
+    library_resolveLabelAddresses(head);
 
 
-    //2) Perform pre-assembly activities, which include:
-    //------checking the syntax of each instruction/label/preprocessor directive/etc.
-    //------expanding macros (if applicable) (tentative / planned feature)
-    //------noting down labels, variables, etc. in a dictionary
-
-    //3) Determine where to place instructions in ROM, and variables, in RAM.
-
-    //4) address resolution of references to labels and variables
-
-    //5) output file generation in Intel hex format
-    
 
 
     //Step 7: Cleanup
+
+    library__free_memory();
+
     struct program_token* pointer = head;
     struct program_token* pointer2;
     printf("\n\n==== Text as follows: ====\n\n");

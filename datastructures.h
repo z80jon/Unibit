@@ -14,6 +14,7 @@ struct program_token {
     struct program_token* nextToken;    ///pointer to the next token in the chain. NULL = end of code
     struct program_token* prevToken;    ///pointer to the previous token in the chain. NULL = start of code.
     uint16_t lineNumber;
+    uint16_t romAddress;
 };
 
 //Library token system: uses ArrayList

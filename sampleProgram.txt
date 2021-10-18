@@ -1,4 +1,5 @@
 
+var foo 4 0x10
 
 #Just copy [0..7] to [8..15]
 start:  load  0 
@@ -19,7 +20,7 @@ start:  load  0
         store 15
 
 end:   negate
-        jump _end
+        jump end
         negate
-        jump _end
+        jump end
 

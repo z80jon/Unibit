@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
+#include "library.h"
 
 /**
  * @brief Parses the mathematical value of the text passed to it. Currently only supports converting a hex or dec number

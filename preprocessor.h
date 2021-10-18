@@ -4,6 +4,7 @@
 #include "tokenizer.h"
 #include "library.h"
 #include "datastructures.h"
+#include "parser.h"
 #include <stdio.h>
 
 /**

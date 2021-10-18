@@ -10,7 +10,8 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
     struct program_token* head = (struct program_token*)malloc(sizeof(struct program_token));
     struct program_token* pointer;
     struct program_token* next;
-    uint16_t currentLine = 0;
+    uint16_t currentLine = 1;
+    uint16_t romAddress = 0;
     head->prevToken = NULL;
     head->nextToken = NULL;
     head->instruction_text = NULL;
@@ -53,6 +54,13 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
                 next->prevToken = pointer;
                 next->lineNumber = currentLine;
                 pointer = next;
+            } else if(tokenizer_hasVariable(sterilizedLineText)) {
+                printf("Found variable declaration on line %d (text: %s)\n",currentLine+1,sterilizedLineText);
+                next = tokenizer_makeVariableDeclarationToken(sterilizedLineText);
+                pointer->nextToken = next;
+                next->prevToken = pointer;
+                next->lineNumber = currentLine;
+                pointer = next;
             }
         }
 
@@ -78,6 +86,7 @@ uint8_t tokenizer_hasLabel(char* c) {
     return 0;
 }
 
+
 uint8_t tokenizer_hasPreprocessorDirective(char* c) {
     return c[0] == '.';
 }
@@ -96,10 +105,7 @@ uint8_t tokenizer_hasOpcode(char* c) {
 
 
 uint8_t tokenizer_hasVariable(char* c) {
-    char* buf = strstr(c, "var");
-    if(buf != NULL)
-        return 1;
-    return 0;
+    return strstr(c, "var") == c;
 }
 
 
@@ -149,6 +155,7 @@ struct program_token* tokenizer_makeOpcodeToken(char* string) {
     return toReturn;
 }
 
+
 struct program_token* tokenizer_makeVariableDeclarationToken(char* string) {
     struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
     toReturn->prevToken = NULL;
@@ -161,6 +168,7 @@ struct program_token* tokenizer_makeVariableDeclarationToken(char* string) {
     return toReturn;
 }
 
+
 void tokenizer_printOutToken(struct program_token* t) {
     if(t == NULL)
         return;
@@ -168,11 +176,11 @@ void tokenizer_printOutToken(struct program_token* t) {
     switch(t->tokenType) {
 
         case PROGTOK__INSTRUCTION:
-            printf("[INSTRUCTION token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->address,t->address,t->instruction_text);
+            printf("[INSTRUCTION token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->romAddress,t->romAddress,t->instruction_text);
             break;
 
         case PROGTOK__LABEL:
-            printf("[LABEL token: line#: %d, address pointed to in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->address,t->address,t->instruction_text);
+            printf("[LABEL token: line#: %d, address pointed to in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->romAddress,t->romAddress,t->instruction_text);
             break;
         
         case PROGTOK__PREPROC_DIR:
