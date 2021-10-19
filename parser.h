@@ -26,4 +26,6 @@ uint8_t parser_getValueOfToken(char* text, uint16_t* returnValue);
 
 uint8_t parser_internal__isEndOfToken(char c);
 
+uint8_t parser_sentBracketedTextToParser(char* text, char endingBracket);
+
 #endif

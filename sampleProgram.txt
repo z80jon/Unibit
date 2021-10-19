@@ -1,6 +1,6 @@
 
 var foo 4 0x10
-var food 16
+var food foo[1]
 
 #Just copy [0..7] to [8..15]
         load 0xF

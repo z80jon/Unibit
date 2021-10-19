@@ -27,7 +27,7 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
 
 
             if(tokenizer_hasLabel(sterilizedLineText)) {
-                printf("\nline %d: \"%s\" --> Label",currentLine+1,sterilizedLineText);
+                //printf("\nLine %d: \"%s\" --> Label",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeLabelToken(sterilizedLineText);
                 for(uint8_t i = 0; i < strlen(sterilizedLineText); i++) {
                     if(sterilizedLineText[i] == ' ') {
@@ -44,20 +44,20 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
             }
             
             if(tokenizer_hasPreprocessorDirective(sterilizedLineText)) {
-                printf("\nLine %d: \"%s\" --> Preprocessor Directive",currentLine+1,sterilizedLineText);
+                //printf("\nLine %d: \"%s\" --> Preprocessor Directive",currentLine+1,sterilizedLineText);
                 next = tokenizer_makePreprocessorToken(sterilizedLineText);
 
             } else if(tokenizer_hasOpcode(sterilizedLineText)) {
-                printf("\nLine %d: \"%s\" --> OpCode",currentLine+1,sterilizedLineText);
+                //printf("\nLine %d: \"%s\" --> OpCode",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeOpcodeToken(sterilizedLineText);
                 next->romAddress = romAddress++;//we only assign ROM addresses to opcodes
                 
             } else if(tokenizer_hasVariable(sterilizedLineText)) {
-                printf("\nLine %d: \"%s\" --> Variable",currentLine+1,sterilizedLineText);
+                //printf("\nLine %d: \"%s\" --> Variable",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeVariableDeclarationToken(sterilizedLineText);
                 
             } else if(!lineHadLabel){
-                printf("\n[Tokenizer]: [ERROR]: Unable to determine what type of token '%s' is!",sterilizedLineText);
+                //printf("\n[Tokenizer]: [ERROR]: Unable to determine what type of token '%s' is!",sterilizedLineText);
                 //return NULL;
             }
 

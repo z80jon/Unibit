@@ -29,7 +29,7 @@ void assembler_run(char* inputFile, char* outputFile) {
     printf("\n\n==== Text as follows: ====\n\n");
     while(pointer != NULL) {
 
-        tokenizer_printOutToken(pointer);
+        //tokenizer_printOutToken(pointer);
         if(pointer->instruction_text != NULL) {
             free(pointer->instruction_text);
         }

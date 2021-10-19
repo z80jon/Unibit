@@ -2,7 +2,7 @@
 
 uint8_t parser(char* text, uint16_t* returnValue) {
     char* token = (char*)calloc(strlen(text)+1,sizeof(char));
-    uint16_t val1 = 0, val2 = 0;
+    uint16_t val1 = 0, val2 = 0, scratchpad;
     enum parser_state state = PARSERSTATE__INITIAL_NUMBER;
     uint8_t textIndex = 0, tokenIndex = 0;
     while(textIndex < strlen(text)) {
@@ -51,6 +51,47 @@ uint8_t parser(char* text, uint16_t* returnValue) {
                     break;
             }
 
+        }
+
+        switch(text[textIndex]) {
+            case '+':
+                //TODO
+                break;
+            case '-':
+                //TODO
+                break;
+            case '*':
+                //TODO
+                break;
+            case '[':
+                if(library_getVariableAddress(token,&scratchpad)!=LIBRARY_STATUS__NO_ERRORS) {
+                    printf("\n[Parser]: [Error]: Indexing attempted on non-variable \"%s\"",token);
+                    return 1;
+                }
+
+                char* buff = (char*)calloc(strlen(text[textIndex]+1)+1,sizeof(char));
+                strcpy(buff, &(text[textIndex+1]));
+                buff = strtok(buff, ']');
+
+                textIndex += strlen(buff)+2;//Shift pointer past everything inside the brackets
+
+                if(parser(buff, &val2) != 0) {
+                    printf("\n[Parser]: Failed when parsing text between brackets \"%s\"",buff);
+                    return 1;
+                }
+
+                val1 += val2;
+                break;
+            case '(':
+                //TODO
+                break;
+            
+            case '\0':
+                break;
+            
+            default:
+                printf("\n[Parser]: [Error]: Encountered unexpected symbol '%c'",text[textIndex]);
+                return 1;
         }
 
         for(uint8_t i = 0; i < strlen(text); i++) {
