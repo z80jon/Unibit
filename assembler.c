@@ -8,9 +8,9 @@ void assembler_run(char* inputFile, char* outputFile) {
     //   >removing (and parsing) preprocessor statements and acting on them accordingly
     //   >removing variable declarations and adding them to a library
     //   >adding labels to a library to be resolved later (once addresses are assigned)
-    printf("Tokenizing file...\n");
+    printf("\nTokenizing file...");
     head = tokenizer_tokenize(inputFile);//assembler_tokenizeText(linesOfText, numLines)3;
-    printf("Tokenization complete!\n");
+    printf("\nTokenization complete!");
 
     if(preprocessor_run(head) != 0) {
         printf("[FATAL ERROR]: [Assembler]: Preprocessor failed!\n");
@@ -19,9 +19,6 @@ void assembler_run(char* inputFile, char* outputFile) {
     library_assignVariableAddresses();
 
     library_resolveLabelAddresses(head);
-
-
-
 
     //Step 7: Cleanup
 
@@ -43,6 +40,4 @@ void assembler_run(char* inputFile, char* outputFile) {
 
     printf("Assembly complete!\n");
 }
-
-
 

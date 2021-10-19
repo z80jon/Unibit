@@ -7,8 +7,8 @@
 
 
 
-static const char* OPCODE_STRINGS[] = {"l ", "load", "s", "store", "negate", "n", "jumpifzero", "jiz"};
-#define OPCODE_STRINGS_LENGTH 8
+static const char* OPCODE_STRINGS[] = {"l ", "load", "s", "store", "negate", "n", "jumpifzero", "jiz", "jump"};
+#define OPCODE_STRINGS_LENGTH 9
 
 
 /**
@@ -57,6 +57,9 @@ struct program_token* tokenizer_makeOpcodeToken(char* string);
  * @return struct program_token* a pointer to a new calloc'd program_token configured as a variable declaration token.
  */
 struct program_token* tokenizer_makeVariableDeclarationToken(char* string);
+
+
+struct program_token* tokenizer_makeGenericToken(char* instruction_text, enum programTokenType tokenType);
 
 
 /**

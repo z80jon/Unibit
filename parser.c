@@ -11,7 +11,7 @@ uint16_t parser(char* text) {
    
         //1) Check if the token is a hex value
         if(strlen(token) > 2 && token[0] == '0' && token[1] == 'x') {
-            sscanf(token,"%x",&current_value);
+            sscanf(token,"%x",(unsigned int*)&current_value);
         }
 
         //2) check if the token is a decimal value

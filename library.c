@@ -149,12 +149,15 @@ uint8_t library_resolveLabelAddresses(struct program_token* head) {
 
             //Bad user input case: a label was declared and that's just the end of the program--no opcodes follow
             if(opcodePointer == NULL) {
+                printf("\n[Library]: [FATAL ERROR]: Dangling label with name \"%s\" detected!",labelPointer->instruction_text);
                 return LIBRARY_STATUS__DANGLING_LABEL;
             }
 
-            if(library_setLabelAddress(labelPointer->instruction_text, opcodePointer->address) != LIBRARY_STATUS__NO_ERRORS) {
+            if(library_setLabelAddress(labelPointer->instruction_text, opcodePointer->romAddress) != LIBRARY_STATUS__NO_ERRORS) {
                 printf("\n[Library]: [FATAL ERROR]: Tried to set address of label '%s', but it was not in the dictionary! This should only ever be printed if something has gone wrong with the library code.",labelPointer->instruction_text);
                 return LIBRARY_STATUS__UNKNOWN_ERROR;
+            } else {
+                //printf("\n[Library]: Set label \"%s\" to point to instruction with text \"%s\"",labelPointer->instruction_text,opcodePointer->instruction_text);
             }
 
         }

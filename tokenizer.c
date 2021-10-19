@@ -10,7 +10,7 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
     struct program_token* head = (struct program_token*)calloc(1,sizeof(struct program_token));
     struct program_token* pointer;
     struct program_token* next;
-    uint16_t currentLine = 1;
+    uint16_t currentLine = 0;
     uint16_t romAddress = 0;
     head->prevToken = NULL;
     head->nextToken = NULL;
@@ -22,11 +22,12 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
     while(currentLine < numLines) {
         char* sterilizedLineText = fileHandler_sterilizeText(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
     //TODO record line number
+        uint8_t lineHadLabel = 0;
         if(sterilizedLineText != NULL) {
 
 
             if(tokenizer_hasLabel(sterilizedLineText)) {
-                printf("\n[Tokenizer]: Found label on line %d (text: %s)",currentLine+1,sterilizedLineText);
+                printf("\nline %d: \"%s\" --> Label",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeLabelToken(sterilizedLineText);
                 for(uint8_t i = 0; i < strlen(sterilizedLineText); i++) {
                     if(sterilizedLineText[i] == ' ') {
@@ -34,21 +35,30 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
                         break;
                     }
                 }
+
+                pointer->nextToken = next;
+                next->prevToken = pointer;
+                next->lineNumber = currentLine;
+                pointer = next;
+                lineHadLabel = 1; //Workaround so no error message prints if there's a label on a line by itself.
             }
             
             if(tokenizer_hasPreprocessorDirective(sterilizedLineText)) {
-                printf("\n[Tokenizer]: Found preprocessor directive on line %d (text: %s)",currentLine+1,sterilizedLineText);
+                printf("\nLine %d: \"%s\" --> Preprocessor Directive",currentLine+1,sterilizedLineText);
                 next = tokenizer_makePreprocessorToken(sterilizedLineText);
 
             } else if(tokenizer_hasOpcode(sterilizedLineText)) {
-                printf("\n[Tokenizer]: Found opcode on line %d (text: %s)",currentLine+1,sterilizedLineText);
-                next = tokenizer_makeOpcodeToken(sterilizedLineText);//TODO grab the token!
+                printf("\nLine %d: \"%s\" --> OpCode",currentLine+1,sterilizedLineText);
+                next = tokenizer_makeOpcodeToken(sterilizedLineText);
                 next->romAddress = romAddress++;//we only assign ROM addresses to opcodes
                 
             } else if(tokenizer_hasVariable(sterilizedLineText)) {
-                printf("\n[Tokenizer]: Found variable declaration on line %d (text: %s)",currentLine+1,sterilizedLineText);
+                printf("\nLine %d: \"%s\" --> Variable",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeVariableDeclarationToken(sterilizedLineText);
                 
+            } else if(!lineHadLabel){
+                printf("\n[Tokenizer]: [ERROR]: Unable to determine what type of token '%s' is!",sterilizedLineText);
+                //return NULL;
             }
 
             pointer->nextToken = next;
@@ -86,7 +96,7 @@ uint8_t tokenizer_hasPreprocessorDirective(char* c) {
 
 
 uint8_t tokenizer_hasOpcode(char* c) {
-    char* buff = calloc(strlen(c), sizeof(char));
+    char* buff = calloc(strlen(c)+1, sizeof(char));
     strcpy(buff, c);
     buff = strtok(buff, " ");//Grab first word of string
     for(uint8_t i = 0; i < OPCODE_STRINGS_LENGTH; i++) {
@@ -106,59 +116,45 @@ uint8_t tokenizer_hasVariable(char* c) {
 
 
 struct program_token* tokenizer_makePreprocessorToken(char* string) {
-    struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
-    toReturn->prevToken = NULL;
-    toReturn->nextToken = NULL;
-    toReturn->address = 0;
-    toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
-    toReturn->tokenType = PROGTOK__PREPROC_DIR;
-    strcpy(toReturn->instruction_text, string);
+    struct program_token* toReturn = tokenizer_makeGenericToken(string, PROGTOK__PREPROC_DIR);
     
     return toReturn;
 }
 
 
 struct program_token* tokenizer_makeLabelToken(char* string) {
-    struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
-    toReturn->prevToken = NULL;
-    toReturn->nextToken = NULL;
-    toReturn->address = 0;
-
-    char* buff = calloc(strlen(string)+1,sizeof(char));
+    char* buff = (char*)calloc(strlen(string)+1,sizeof(char));
     strcpy(buff, string);
     buff = strtok(buff, ":");
 
-    toReturn->instruction_text = (char*)calloc(strlen(buff)+1, sizeof(char));
-    toReturn->tokenType = PROGTOK__LABEL;
-    strcpy(toReturn->instruction_text, buff);
+    struct program_token* toReturn = tokenizer_makeGenericToken(buff, PROGTOK__LABEL);
 
     free(buff);
-
     return toReturn;
 }
 
 
 struct program_token* tokenizer_makeOpcodeToken(char* string) {
-    struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
-    toReturn->prevToken = NULL;
-    toReturn->nextToken = NULL;
-    toReturn->address = 0;
-    toReturn->instruction_text = (char*)calloc(strlen(string)+1, sizeof(char));
-    toReturn->tokenType = PROGTOK__INSTRUCTION;
-    strcpy(toReturn->instruction_text, string);
+    struct program_token* toReturn = tokenizer_makeGenericToken(string, PROGTOK__INSTRUCTION);
 
     return toReturn;
 }
 
 
 struct program_token* tokenizer_makeVariableDeclarationToken(char* string) {
+    struct program_token* toReturn = tokenizer_makeGenericToken(&(string[4]), PROGTOK__VARIABLE_DEC);
+    
+    return toReturn;
+}
+
+struct program_token* tokenizer_makeGenericToken(char* instruction_text, enum programTokenType tokenType) {
     struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
     toReturn->prevToken = NULL;
     toReturn->nextToken = NULL;
     toReturn->address = 0;
-    toReturn->instruction_text = (char*)calloc(strlen(&(string[4]))+1, sizeof(char));
-    toReturn->tokenType = PROGTOK__VARIABLE_DEC;
-    strcpy(toReturn->instruction_text, &string[4]); //Copy over everything after "var "
+    toReturn->instruction_text = (char*)calloc(strlen(instruction_text)+1, sizeof(char));
+    toReturn->tokenType = tokenType;
+    strcpy(toReturn->instruction_text, instruction_text); 
 
     return toReturn;
 }
@@ -192,3 +188,4 @@ void tokenizer_printOutToken(struct program_token* t) {
     }
     
 }
+

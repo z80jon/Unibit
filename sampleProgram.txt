@@ -3,6 +3,7 @@ var foo 4 0x10
 var food 16
 
 #Just copy [0..7] to [8..15]
+        load 0xF
 init:
 start:  load  0 
         store 8
@@ -21,8 +22,8 @@ start:  load  0
         load  7
         store 15
 
-end:   negate
+end:    negate
         jump end
-        #
+        negate
         jump end
 
