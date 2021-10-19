@@ -3,11 +3,11 @@
 
 
 uint8_t preprocessor_run(struct program_token* head) {
-    //printf("\n[Preprocessor]: Starting");
+    printf("\n[Preprocessor]: Starting");
     struct program_token* token = head;
 
     while(token != NULL) {
-        //printf("\n[Preprocessor]: Handling token with text '%s'",token->instruction_text);
+        printf("\n[Preprocessor]: Handling token with text '%s'",token->instruction_text);
 
         //Variable: enter it into library and remove from the chain
         if(token->tokenType == PROGTOK__VARIABLE_DEC) {
@@ -29,14 +29,22 @@ uint8_t preprocessor_run(struct program_token* head) {
                 errorCode = library_addVariable(varName, 1);
 
             } else {
-                uint16_t numBits = parser(strtok_token);
+                uint16_t numBits;
+                if(parser(strtok_token, &numBits) != 0) {
+                    printf("\n[Preprocessor]: [FATAL ERROR]: Failed to parse meaning of \"%s\" from text \"%s\" on line %d",strtok_token, token->instruction_text, token->lineNumber);
+                    return 1;
+                }
                 strtok_token = strtok(NULL, " ");
 
                 if(strtok_token == NULL) {//Case: var <name> <numBits>
                     errorCode = library_addVariable(varName, numBits);
 
                 } else {//Case: var <name> <numBits> <address>
-                    uint16_t addr = parser(strtok_token);
+                    uint16_t addr;
+                    if(parser(strtok_token, &addr) != 0) {
+                        printf("\n[Preprocessor]: [FATAL ERROR]: Failed to parse meaning of \"%s\" from text \"%s\" on line %d",strtok_token, token->instruction_text, token->lineNumber);
+                        return 1;
+                    }
                     errorCode = library_addVariableWithAddress(varName, numBits, addr);
                 }
             }
