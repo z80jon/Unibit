@@ -10,7 +10,6 @@ uint8_t parser(char* text, uint16_t* returnValue) {
         while(!parser_internal__isEndOfToken(text[textIndex])) {
             token[tokenIndex++] = text[textIndex++];
         }
-        printf("\n[Parser]: Stopped looking for new token input at character '%c'",text[textIndex]);
 
         //2) if in a math state (initial or add/sub/mult), perform the action on
         if(tokenIndex > 0) {
