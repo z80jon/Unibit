@@ -1,6 +1,6 @@
 
 var foo 4 0x10
-var onebit 1
+var onebit 
 
 #Just copy [0..7] to [8..15]
         load 0xF
@@ -21,6 +21,7 @@ start:  load  0
         store 14
         load  7
         store 15
+
 
 end:    negate
         jump end

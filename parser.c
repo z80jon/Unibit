@@ -6,12 +6,13 @@ uint8_t parser(char* text, uint16_t* returnValue) {
     enum parser_state state = PARSERSTATE__INITIAL_NUMBER;
     uint8_t textIndex = 0, tokenIndex = 0;
     while(textIndex < strlen(text)) {
+
         //1) copy over bytes until a null term or math operator or space or parentheses is found
         while(!parser_internal__isEndOfToken(text[textIndex])) {
             token[tokenIndex++] = text[textIndex++];
         }
 
-        //2) if in a math state (initial or add/sub/mult), perform the action on
+        //2) TODO write this
         if(tokenIndex > 0) {
             if(parser_getValueOfToken(token, &val2)) {
                 printf("\n[Parser]: [ERROR]: Unable to resolve meaning of \"%s\"",token);
@@ -40,10 +41,6 @@ uint8_t parser(char* text, uint16_t* returnValue) {
                 
                 case PARSERSTATE__MULTIPLY:
                     val1 *= val2;
-                    break;
-                
-                case PARSERSTATE__INDEX:
-                    //TODO
                     break;
 
                 case PARSERSTATE__EXPECTING_OPERATOR:
@@ -186,26 +183,18 @@ uint8_t parser(char* text, uint16_t* returnValue) {
 
 
 uint8_t parser_getValueOfToken(char* text, uint16_t* returnValue) {
-    //1) Check if the token is a hex value
-    if(strlen(text) > 2 && text[0] == '0' && text[1] == 'x') {
-        sscanf(text,"%x",(unsigned int*)returnValue);//TODO check for errors
-    }
-
-    //2) check if the token is a decimal value
-    else if(isdigit(text[0])) {
-        sscanf(text, "%d", (int*)returnValue);//TODO check for errors
-    }
-
-    //3) check if it's a variable
-    else if(library_getVariableAddress(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);
+    if(strlen(text) > 2 && text[0] == '0' && text[1] == 'x') {//Hex
+        if(sscanf(text,"%x",(unsigned int*)returnValue) != 1)
+            return 1;
+    } else if(isdigit(text[0])) {//Decimal
+        if(sscanf(text, "%d", (int*)returnValue) != 1)
+            return 1;
+    } else if(library_getVariableAddress(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);//Variable
     
-    //4) check if it's a label
-    else if(library_getLabelAddress(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);
+    else if(library_getLabelAddress(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);//Label
 
-    else {
-        printf("\n[Parser]: [ERROR]: Unable to resolve meaning of token '%s'",text);
+    else
         return 1;
-    }
     return 0;
 }
 

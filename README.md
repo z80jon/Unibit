@@ -21,3 +21,20 @@ This assembler works in several steps, in the interest of simplicity of design, 
 4) address resolution of references to labels and variables
 
 5) output file generation in Intel hex format
+
+There are several key files in the assembler, each of which has a key task.
+
+main.h/.c: 
+
+fileHandler.h/.c: Handle reading in files and cleaning up the text in them, as well as generating Intel hex files
+
+parser.h/.c: interprets math strings, recognizing references to the symbol library where relevant, and calculating values.
+
+library.h/.c: Accepts symbol definitions and information for future recollection. Handles variable address resolution and
+memory allocation.
+
+tokenizer.h/.c: takes the sterilized text input and creates a linked list of tokens for processing
+
+assembler.h/.c: fairly empty--just coordinates the other libraries to do stuff.
+
+preprocessor.h/.c: handles label address resolution. Not much else at the moment.

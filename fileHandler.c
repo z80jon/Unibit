@@ -10,6 +10,11 @@ int fileHandler_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t
         return 1;
     }
 
+    //TODO change to the following:
+    //1) read in entire file
+    //2) in cases of a comment start, whitespace out until the next /r or /n is seen. Whitespace them out too.
+    //3) all /r -> ' ', all '\n' -> ';.
+
     //Read in # lines
     uint32_t numLines = 1;
     int c = getc(fp);

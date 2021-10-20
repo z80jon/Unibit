@@ -20,7 +20,7 @@ void assembler_run(char* inputFile, char* outputFile) {
 
     library_resolveLabelAddresses(head);
 
-    //Step 7: Cleanup
+    //Step make the output file
 
     library__free_memory();
 
