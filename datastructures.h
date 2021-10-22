@@ -10,8 +10,8 @@ enum Opcode{UNDEFINED, LOAD, STORE, NEGATE, JUMPIFZERO};
 enum libraryTokenType{LIBTOK_UNDEFINED, LIBTOK__LABEL, LIBTOK__VARIABLE};//TODO change to uppercase first letter
 
 struct program_token {
-    char* instruction_text;             ///the raw text of the code--minus spaces and /r/n--between one ; and the next ;.
-    enum Opcode{LOAD, STORE, NEGATE, JUMPIFZERO};
+    char* instruction_text;             ///The raw text of the code--minus spaces and /r/n--between one ; and the next ;.
+    enum Opcode opcode;                 ///If this is a PROGTOK__INSTRUCTION token, this will be populated with the opcode enum
     enum programTokenType tokenType;    ///The type of token this is
     enum Opcode opcode;
     uint16_t address;                   ///The address to jump to or load/store from. Optional in negate instructions.
