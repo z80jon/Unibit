@@ -10,6 +10,17 @@
 static const char* OPCODE_STRINGS[] = {"l ", "load", "s", "store", "negate", "n", "jumpifzero", "jiz", "jump"};
 #define OPCODE_STRINGS_LENGTH 9
 
+static const char* LOAD_STRINGS[] = {"l", "load"};
+#define LOAD_STRINGS_LENGTH  2
+static const char* STORE_STRINGS[] = {"s", "store"};
+#define STORE_STRINGS_LENGTH  2
+static const char* NEGATE_STRINGS[] = {"n", "negate"};
+#define NEGATE_STRINGS_LENGTH  2
+static const char* JUMP_STRINGS[] = {"jumpifzero", "jump", "jiz"};
+#define JUMP_STRINGS_LENGTH  3
+
+
+
 
 /**
  * @brief Recursively tokenizes the entire program, doing the following:

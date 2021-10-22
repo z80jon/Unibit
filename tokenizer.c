@@ -137,6 +137,30 @@ struct program_token* tokenizer_makeLabelToken(char* string) {
 struct program_token* tokenizer_makeOpcodeToken(char* string) {
     struct program_token* toReturn = tokenizer_makeGenericToken(string, PROGTOK__INSTRUCTION);
 
+    char* buff = (char*)calloc(strlen(string)+1,sizeof(char));
+    strcpy(buff,string);
+    buff = strtok(buff, " ");
+    for(uint8_t i = 0; i < LOAD_STRINGS_LENGTH; i++)
+        if(strcmp(buff,LOAD_STRINGS[i]) == 0)
+            toReturn->opcode = LOAD;
+    for(uint8_t i = 0; i < NEGATE_STRINGS_LENGTH; i++)
+        if(strcmp(buff, NEGATE_STRINGS[i])==0)
+            toReturn->opcode = NEGATE;
+    for(uint8_t i = 0; i < STORE_STRINGS_LENGTH; i++)
+        if(strcmp(buff, STORE_STRINGS[i])==0)
+            toReturn->opcode = STORE;
+    for(uint8_t i = 0; i < JUMP_STRINGS_LENGTH; i++)
+        if(strcmp(buff, JUMP_STRINGS[i])==0)
+            toReturn->opcode = JUMPIFZERO;
+    if(toReturn->opcode == UNDEFINED) {
+        printf("\n[Tokenizer]: [Error]: Unable to understand opcode token \"%s\". This is likely a bug in the assembler!",buff);
+        return NULL;
+    }
+
+    free(toReturn->instruction_text);
+    toReturn->instruction_text = (char*)calloc(strlen(buff)+1, sizeof(char));
+    strcpy(toReturn->instruction_text, buff);
+
     return toReturn;
 }
 
