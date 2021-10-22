@@ -46,11 +46,7 @@ struct instruction_token* assembler_tokenizeText(char** text, uint16_t numLines)
 void assembler_haltAssembly();
 
 
-/**
- * @brief completes the assembly process, taking the token's data and setting the raw binary data contained within it.
- * 
- * @param token the instruction to assemble
- */
-//void assembler_assembleToken(struct instuction_token token);
+
+uint8_t assembler__generate_hex(struct instuction_token token);
 
 #endif

@@ -40,4 +40,3 @@ void assembler_run(char* inputFile, char* outputFile) {
 
     printf("Assembly complete!\n");
 }
-
