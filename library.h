@@ -23,6 +23,8 @@
 #define LIBRARY_STATUS__DANGLING_LABEL   11 ///This error will occur if a label is declared at the end of a program with no instructions following it.
 
 
+
+
 #define DEBUG_LIBRARY 0
 
 static struct library_token* libraryTokens = NULL; ///Pointer to array of Library tokens
@@ -31,7 +33,10 @@ static uint16_t numLibraryTokens = 0;           ///Holds the current number of l
 static const uint8_t VALID_NON_ALPHANUM_CHARS_LEN = 1;
 static const char VALID_NON_ALPHANUM_CHARS[] = {'_'};
 
-//====================== Variable functions ======================//
+
+
+
+//====================== Variable Functions ======================//
 
 /**
  * @brief Adds a record for a variable to the registry in the library.
@@ -73,7 +78,9 @@ uint8_t library__get_variable_address(char* name, uint16_t* address);
 uint8_t library__assign_variable_addresses();
 
 
-//====================== Label functions ======================//
+
+
+//====================== Label Functions ======================//
 
 /**
  * @brief Adds a label to the dictionary, but does not define its address yet.
@@ -122,7 +129,10 @@ uint8_t library__get_label_address(char* name, uint16_t* rom_address);
  */
 uint8_t library__resolve_label_addresses(struct program_token* head);
 
-//====================== Misc functions ======================//
+
+
+
+//====================== Misc Functions ======================//
 
 /**
  * @brief called at the end of assembly--frees up any allocated memory.
@@ -133,7 +143,10 @@ void library__free_memory();
 
 enum libraryTokenType library__get_token_type(char* name);
 
-//====================== Internal-use functions ======================//
+
+
+
+//====================== Internal-use Functions ======================//
 
 /**
  * @brief Attempts to locate and return the library token with the specified name
@@ -169,6 +182,7 @@ uint8_t library_internal__add_generic_token(char* name);
  * @return LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__ADDR_CONFLICT
  */
 uint8_t library_internal__check_for_RAM_address_conflicts(uint16_t numBits, uint16_t address);
+
 
 
 

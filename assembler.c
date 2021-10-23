@@ -1,5 +1,8 @@
 #include "assembler.h"
 
+
+
+
 void assembler_run(char* inputFile, char* outputFile) {
 
     //1) Read in main file, while at the same time...
@@ -86,3 +89,6 @@ uint8_t assembler__generate_hex(struct program_token* head) {
     printf("\n[Hex Generation]: Complete!");
     return 0;
 }
+
+
+

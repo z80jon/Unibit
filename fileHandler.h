@@ -10,7 +10,12 @@
 #include <ctype.h>
 #include "datastructures.h"
 
+
+
+
 #define FILEHANDLER_DEBUG 0
+
+
 
 
 /**
@@ -49,6 +54,8 @@ char* fileHandler__sterilize_text(char* text);
  * @return uint8_t 0 if successful, else 1 (likely I/O issue)
  */
 uint8_t fileHandler__output_hex_data(struct program_token* head, char* highByteFileName, char* lowByteFileName);
+
+
 
 
 #endif

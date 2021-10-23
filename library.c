@@ -1,6 +1,10 @@
 #include "library.h"
 
 
+
+
+//====================== Variable Functions ======================//
+
 uint8_t library__add_variable(char* name, uint16_t numBits) {
     if(numBits == 0) return LIBRARY_STATUS__INVALID_SIZE;
     uint8_t errorCode = library_internal__add_generic_token(name);
@@ -89,8 +93,9 @@ uint8_t library_get_variable_size(char* name, uint16_t* size) {
 }
 
 
-//====================== Label functions ======================//
 
+
+//====================== Label Functions ======================//
 
 uint8_t library__add_label(char* name) {
     uint8_t errorCode = library_internal__add_generic_token(name);
@@ -177,7 +182,10 @@ uint8_t library__resolve_label_addresses(struct program_token* head) {
     return LIBRARY_STATUS__NO_ERRORS;
 }
 
-//====================== Misc functions ======================//
+
+
+
+//====================== Misc Functions ======================//
 
 void library__free_memory() {
     printf("\n======== Library Tokens =======\n");
@@ -217,8 +225,9 @@ enum libraryTokenType library__get_token_type(char* name) {
 }
 
 
-//====================== Internal-use functions ======================//
 
+
+//====================== Internal-use Functions ======================//
 
 struct library_token* library_internal__get_token(char* name) {
     for(uint16_t i = 0; i < numLibraryTokens; i++) {

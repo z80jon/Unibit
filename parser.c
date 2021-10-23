@@ -1,5 +1,8 @@
 #include "parser.h"
 
+
+
+
 uint8_t parser(char* text, uint16_t* returnValue) {
     if(text == NULL || text[0] == '\0') {
         //printf("Null terminator detected");
@@ -203,6 +206,10 @@ uint8_t parser_getValueOfToken(char* text, uint16_t* returnValue) {
     return 0;
 }
 
+
 uint8_t parser_internal__isEndOfToken(char c) {
    return (c == ' ') || (c == '[') || (c == ']') || (c == '*') || (c == '+') || (c == '-') || (c == '\0') || (c=='(') || (c==')');
 }
+
+
+

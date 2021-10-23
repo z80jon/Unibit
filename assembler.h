@@ -10,19 +10,12 @@
 #include "tokenizer.h"
 #include "preprocessor.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                                       VARIABLES AND CONSTANTS                                          ////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * @brief Is the 'head' node of the LinkedList of program_tokens that the assembler will step through in the assembly
- *        process.
- */
-static struct program_token* head;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                                               FUNCTIONS                                                ////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static struct program_token* head; ///Pointer to head node of linked list of program tokens (see datastructures.h for more info)
+
+
 
 
 /**
@@ -34,18 +27,6 @@ static struct program_token* head;
  */
 void assembler_run(char* inputFile, char* outputFile);
 
-/**
- * @brief takes in the raw lines of text from a file and makes 
- * 
- * @param text char** to the raw text of the file. The first dimension is the line, and the second, chars within that
- *             line.
- */
-struct instruction_token* assembler_tokenizeText(char** text, uint16_t numLines);
-
-
-void assembler_haltAssembly();
-
-
 
 /**
  * @brief Generates hex ROM data for all of the tokens, referencing the library and parsing data as necessary.
@@ -54,5 +35,8 @@ void assembler_haltAssembly();
  * @return uint8_t 0 if successful, else 1
  */
 uint8_t assembler__generate_hex(struct program_token* head);
+
+
+
 
 #endif

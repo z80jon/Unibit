@@ -1,5 +1,8 @@
 #include "fileHandler.h"
 
+
+
+
 int fileHandler__read_in_file(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
 
     //Open file
@@ -117,7 +120,7 @@ char* fileHandler__sterilize_text(char* text) {
 }
 
 
-uint8_t fileHandler_output_hex_data(struct program_token* head, char* highByteFileName, char* lowByteFileName) {
+uint8_t fileHandler__output_hex_data(struct program_token* head, char* highByteFileName, char* lowByteFileName) {
     struct program_token* token = head;
     
     //1) open files
@@ -149,4 +152,6 @@ uint8_t fileHandler_output_hex_data(struct program_token* head, char* highByteFi
 
     return 0;
 }
+
+
 
