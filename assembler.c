@@ -27,7 +27,7 @@ void assembler_run(char* inputFile, char* outputFile) {
         printf("\n[Assembler]: [Error]: Assembly failed!");
     }
 
-    if(fileHandler_outputHexData(head, "output_high.hex", "output_low.hex") != 0) {
+    if(fileHandler_output_hex_data(head, "output_high.hex", "output_low.hex") != 0) {
     }
 
     library__free_memory();
@@ -37,7 +37,7 @@ void assembler_run(char* inputFile, char* outputFile) {
     printf("\n\n==== Text as follows: ====\n\n");
     while(pointer != NULL) {
 
-        tokenizer_printOutToken(pointer);
+        tokenizer__print_out_token(pointer);
         if(pointer->instruction_text != NULL) {
             free(pointer->instruction_text);
         }

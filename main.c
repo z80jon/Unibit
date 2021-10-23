@@ -6,13 +6,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if(!fileHandler_doesFileExist(argv[1])) {
+    if(!fileHandler__does_file_exist(argv[1])) {
         printf("\nERROR: Input file \"%s\" does not exist!", argv[1]);
         return 1;
     }
 
     if(argc == 3) {
-        if(fileHandler_doesFileExist(argv[2]))
+        if(fileHandler__does_file_exist(argv[2]))
             printf("\nNOTE: output file file \"%s\" exists, and will be overwritten!", argv[2]);
         assembler_run(argv[1], argv[2]);
     } else {

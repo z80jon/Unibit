@@ -24,6 +24,6 @@ start:  load  0
 
 
 end:    negate
-#        jump end
-#        negate
-#        jump end
+        jump end
+        negate
+        jump end

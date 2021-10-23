@@ -80,7 +80,7 @@ struct program_token* tokenizer_makeGenericToken(char* instruction_text, enum pr
  * @param c the string to check the first word of
  * @return uint8_t 1 if there is a label, else 0.
  */
-uint8_t tokenizer_hasLabel(char* c);
+uint8_t tokenizer__has_label(char* c);
 
 /**
  * @brief Checks to see if the first word in the string is a preprocessor directive
@@ -96,7 +96,7 @@ uint8_t tokenizer_hasPreprocessorDirective(char* c);
  * @param c the string to check the first word of
  * @return uint8_t 1 if there is an opcode, else 0
  */
-uint8_t tokenizer_hasOpcode(char* c);
+uint8_t tokenizer__has_opcode(char* c);
 
 /**
  * @brief Checks to see if the first word in the string is the beginning of a variable declaration
@@ -104,14 +104,14 @@ uint8_t tokenizer_hasOpcode(char* c);
  * @param c the string to check the first word of
  * @return uint8_t 1 if there is a variable declaration, else 0
  */
-uint8_t tokenizer_hasVariable(char* c);
+uint8_t tokenizer__has_variable(char* c);
 
 /**
  * @brief Prints out metadata about the token, if any exists
  * 
  * @param t the token to print out data from
  */
-void tokenizer_printOutToken(struct program_token* t);
+void tokenizer__print_out_token(struct program_token* t);
 
 /**
  * @brief Removes the token passed to it from the chain, deallocating memory as able, and updating the pointers for the neighbor tokens.

@@ -5,7 +5,7 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
 
     uint32_t numLines;
     char** linesOfText;
-    fileHandler_readInFile(inputFile,&linesOfText, &numLines);
+    fileHandler__read_in_file(inputFile,&linesOfText, &numLines);
 
     struct program_token* head = (struct program_token*)calloc(1,sizeof(struct program_token));
     struct program_token* pointer;
@@ -20,7 +20,7 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
 
     //Step 1: create linked list of tokens of each part of the program (instructions, labels, constants, etc.)
     while(currentLine < numLines) {
-        char* sterilizedLineText = fileHandler_sterilizeText(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
+        char* sterilizedLineText = fileHandler__sterilize_text(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
     //TODO record line number
         uint8_t lineHadLabel = 0;
         if(sterilizedLineText != NULL) {
@@ -47,12 +47,12 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
                 //printf("\nLine %d: \"%s\" --> Preprocessor Directive",currentLine+1,sterilizedLineText);
                 next = tokenizer_makePreprocessorToken(sterilizedLineText);
 
-            } else if(tokenizer_hasOpcode(sterilizedLineText)) {
+            } else if(tokenizer__has_opcode(sterilizedLineText)) {
                 //printf("\nLine %d: \"%s\" --> OpCode",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeOpcodeToken(sterilizedLineText);
                 next->romAddress = romAddress++;//we only assign ROM addresses to opcodes
                 
-            } else if(tokenizer_hasVariable(sterilizedLineText)) {
+            } else if(tokenizer__has_variable(sterilizedLineText)) {
                 //printf("\nLine %d: \"%s\" --> Variable",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeVariableDeclarationToken(sterilizedLineText);
                 
@@ -85,7 +85,7 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
 }
 
 
-uint8_t tokenizer_hasLabel(char* c) {
+uint8_t tokenizer__has_label(char* c) {
     uint8_t index = 0;
     while(c[index] != '\0' && c[index] != ' ' && c[index] != '\r' && c[index] != '\n' && index < strlen(c)) {
         if(c[index++] == ':')
@@ -100,7 +100,7 @@ uint8_t tokenizer_hasPreprocessorDirective(char* c) {
 }
 
 
-uint8_t tokenizer_hasOpcode(char* c) {
+uint8_t tokenizer__has_opcode(char* c) {
     char* buff = calloc(strlen(c)+1, sizeof(char));
     strcpy(buff, c);
     buff = strtok(buff, " ");//Grab first word of string
@@ -115,7 +115,7 @@ uint8_t tokenizer_hasOpcode(char* c) {
 }
 
 
-uint8_t tokenizer_hasVariable(char* c) {
+uint8_t tokenizer__has_variable(char* c) {
     return strstr(c, "var") == c;
 }
 
@@ -183,6 +183,7 @@ struct program_token* tokenizer_makeVariableDeclarationToken(char* string) {
     return toReturn;
 }
 
+
 struct program_token* tokenizer_makeGenericToken(char* instruction_text, enum programTokenType tokenType) {
     struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
     toReturn->prevToken = NULL;
@@ -196,7 +197,7 @@ struct program_token* tokenizer_makeGenericToken(char* instruction_text, enum pr
 }
 
 
-void tokenizer_printOutToken(struct program_token* t) {
+void tokenizer__print_out_token(struct program_token* t) {
     if(t == NULL)
         return;
 
@@ -240,6 +241,7 @@ void tokenizer_printOutToken(struct program_token* t) {
     }
     
 }
+
 
 struct program_token* tokenizer__remove_token_from_chain(struct program_token* token) {
     if(token->instruction_text != NULL)

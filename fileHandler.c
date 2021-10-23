@@ -1,6 +1,6 @@
 #include "fileHandler.h"
 
-int fileHandler_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
+int fileHandler__read_in_file(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
 
     //Open file
     printf("\nReading in file '%s'",filePath);
@@ -67,12 +67,12 @@ int fileHandler_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t
     return 0;
 }
 
-uint8_t fileHandler_doesFileExist(char* filePath) {
+uint8_t fileHandler__does_file_exist(char* filePath) {
     return access( filePath, F_OK ) == 0;
 }
 
 
-char* fileHandler_sterilizeText(char* text) {
+char* fileHandler__sterilize_text(char* text) {
     if(strlen(text) == 0)
         return NULL;
     
@@ -116,7 +116,7 @@ char* fileHandler_sterilizeText(char* text) {
 }
 
 
-uint8_t fileHandler_outputHexData(struct program_token* head, char* highByteFileName, char* lowByteFileName) {
+uint8_t fileHandler_output_hex_data(struct program_token* head, char* highByteFileName, char* lowByteFileName) {
     struct program_token* token = head;
     
     //1) open files
