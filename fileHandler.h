@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include "datastructures.h"
 
 /**
  * @brief Reads in the file in path filePath (relative to folder program is executed in)
@@ -33,6 +34,17 @@ uint8_t fileHandler_doesFileExist(char* filePath);
  * 
  */
 char* fileHandler_sterilizeText(char* text);
+
+
+/**
+ * @brief Generates the Intel-formatted hex files from the program tokens.
+ * 
+ * @param head the start of the program
+ * @param highByte the file name to output high byte Intel hex data into
+ * @param lowByte the file name to output low byte Intel hex data into
+ * @return uint8_t 0 if successful, else 1 (likely I/O issue)
+ */
+uint8_t fileHandler_outputHexData(struct program_token* head, char* highByteFileName, char* lowByteFileName);
 
 
 #endif

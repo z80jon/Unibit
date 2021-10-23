@@ -11,14 +11,13 @@ enum libraryTokenType{LIBTOK_UNDEFINED, LIBTOK__LABEL, LIBTOK__VARIABLE};//TODO 
 
 struct program_token {
     char* instruction_text;             ///the raw text of the code--minus spaces and /r/n--between one ; and the next ;.
-    enum Opcode{LOAD, STORE, NEGATE, JUMPIFZERO};
     enum programTokenType tokenType;    ///The type of token this is
-    enum Opcode opcode;
-    uint16_t address;                   ///The address to jump to or load/store from. Optional in negate instructions.
+    enum Opcode opcode;                 ///Stores the type of opcode in use
+    uint16_t romData;                   ///Post-assembly, this will contain the raw data to be stored in EEPROMs.
     struct program_token* nextToken;    ///pointer to the next token in the chain. NULL = end of code
     struct program_token* prevToken;    ///pointer to the previous token in the chain. NULL = start of code.
     uint16_t lineNumber;                ///The line (in the input file) that corresponds to this 
-    uint16_t romAddress;                //The hexadecimal address the instruction will be stored in in ROM
+    uint16_t romAddress;                ///The hexadecimal address the instruction will be stored in in ROM
 };
 
 

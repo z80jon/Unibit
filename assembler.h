@@ -47,6 +47,12 @@ void assembler_haltAssembly();
 
 
 
-uint8_t assembler__generate_hex(struct instuction_token token);
+/**
+ * @brief Generates hex ROM data for all of the tokens, referencing the library and parsing data as necessary.
+ * 
+ * @param head the starting token of the chain
+ * @return uint8_t 0 if successful, else 1
+ */
+uint8_t assembler__generate_hex(struct program_token* head);
 
 #endif

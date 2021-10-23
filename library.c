@@ -141,6 +141,7 @@ uint8_t library_resolveLabelAddresses(struct program_token* head) {
     labelPointer = head;
     opcodePointer = head;
     while(labelPointer != NULL) {
+        //printf("\nOn label \"%s\" and search is on \"%s\"",labelPointer->instruction_text,opcodePointer->instruction_text);
         if(labelPointer->tokenType == PROGTOK__LABEL) {
             opcodePointer = labelPointer->nextToken;
             while(opcodePointer->tokenType != PROGTOK__INSTRUCTION && opcodePointer != NULL) {
@@ -161,6 +162,7 @@ uint8_t library_resolveLabelAddresses(struct program_token* head) {
             }
 
         }
+        
         labelPointer = labelPointer->nextToken;
     }
 

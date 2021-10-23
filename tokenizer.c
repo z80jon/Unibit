@@ -76,6 +76,11 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
     }
     free(linesOfText);
 
+    //Due to a design flaw of the code, the 'head' is never actually used and contains garbage data. This correct that by
+    //removing it.
+    head = head->nextToken;
+    free(head->prevToken);
+    head->prevToken = NULL;
     return head;
 }
 
@@ -156,7 +161,14 @@ struct program_token* tokenizer_makeOpcodeToken(char* string) {
         printf("\n[Tokenizer]: [Error]: Unable to understand opcode token \"%s\". This is likely a bug in the assembler!",buff);
         return NULL;
     }
-
+    
+    //printf("\nBuff is currently: \"%s\"",buff);
+    buff = strtok(NULL, " ");
+    if(buff == NULL) {
+        toReturn->instruction_text = NULL;
+        return toReturn;
+    }
+    //printf(", and is now: \"%s\"",buff);
     free(toReturn->instruction_text);
     toReturn->instruction_text = (char*)calloc(strlen(buff)+1, sizeof(char));
     strcpy(toReturn->instruction_text, buff);
@@ -175,7 +187,7 @@ struct program_token* tokenizer_makeGenericToken(char* instruction_text, enum pr
     struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
     toReturn->prevToken = NULL;
     toReturn->nextToken = NULL;
-    toReturn->address = 0;
+    toReturn->romData = 0;
     toReturn->instruction_text = (char*)calloc(strlen(instruction_text)+1, sizeof(char));
     toReturn->tokenType = tokenType;
     strcpy(toReturn->instruction_text, instruction_text); 
@@ -191,7 +203,23 @@ void tokenizer_printOutToken(struct program_token* t) {
     switch(t->tokenType) {
 
         case PROGTOK__INSTRUCTION:
-            printf("[INSTRUCTION token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->romAddress,t->romAddress,t->instruction_text);
+            printf("[INSTRUCTION token: line#: %d, address in ROM: %d/%4X, ",t->lineNumber+1,t->romAddress,t->romAddress);
+            
+            switch(t->opcode) {
+                case LOAD:
+                    printf("LOAD from %d/0x%X, ",t->romData & 0x3FFF, t->romData & 0x3FFF);
+                    break;
+                case NEGATE:
+                    printf("NEGATE (with dangling address %d/0x%X), ",t->romData & 0x3FFF, t->romData & 0x3FFF);
+                    break;
+                case STORE:
+                    printf("STORE to %d/0x%X, ",t->romData & 0x3FFF, t->romData & 0x3FFF);
+                    break;
+                case JUMPIFZERO:
+                    printf("JUMP to %d/0x%X, ",t->romData & 0x3FFF , t->romData & 0x3FFF);
+                    break;
+            }
+            printf("text: '%s']\n",t->instruction_text);
             break;
 
         case PROGTOK__LABEL:
@@ -207,9 +235,22 @@ void tokenizer_printOutToken(struct program_token* t) {
             break;
         
         default:
-            printf("[UNKNOWN token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->address,t->address,t->instruction_text);
+            printf("[UNKNOWN token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->romData,t->romData,t->instruction_text);
             break;
     }
     
 }
 
+struct program_token* tokenizer__remove_token_from_chain(struct program_token* token) {
+    if(token->instruction_text != NULL)
+        free(token->instruction_text);
+    
+    if(token->prevToken != NULL)
+        token->prevToken->nextToken = token->nextToken;
+    if(token->nextToken != NULL)
+        token->nextToken->prevToken = token->prevToken;
+
+    struct program_token* toReturn = token->nextToken;
+    free(token);
+    return toReturn;
+}

@@ -113,5 +113,13 @@ uint8_t tokenizer_hasVariable(char* c);
  */
 void tokenizer_printOutToken(struct program_token* t);
 
+/**
+ * @brief Removes the token passed to it from the chain, deallocating memory as able, and updating the pointers for the neighbor tokens.
+ * 
+ * @param token the token to remove from the chain.
+ * @return struct program_token* the next token in the chain, if there is one.
+ */
+struct program_token* tokenizer__remove_token_from_chain(struct program_token* token);
+
 
 #endif

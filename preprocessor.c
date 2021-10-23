@@ -5,9 +5,10 @@
 uint8_t preprocessor_run(struct program_token* head) {
     printf("\n[Preprocessor]: Starting");
     struct program_token* token = head;
-
+    struct program_token* token2;
+    uint8_t deleteToken = 0;
     while(token != NULL) {
-        printf("\n[Preprocessor]: Handling token with text '%s'",token->instruction_text);
+        //printf("\n[Preprocessor]: Handling token with text '%s'",token->instruction_text);
 
         //Variable: enter it into library and remove from the chain
         if(token->tokenType == PROGTOK__VARIABLE_DEC) {
@@ -65,11 +66,7 @@ uint8_t preprocessor_run(struct program_token* head) {
             }
 
             free(varName);
-            free(token->instruction_text);
-
-            token->prevToken->nextToken = token->nextToken;
-            token->nextToken->prevToken = token->prevToken;
-            free(token);
+            deleteToken = 1;
         }
 
         if(token->tokenType == PROGTOK__PREPROC_DIR) {
@@ -90,7 +87,11 @@ uint8_t preprocessor_run(struct program_token* head) {
         }
 
         token = token->nextToken;
+        if(deleteToken) {
+            token = tokenizer__remove_token_from_chain(token);
+            deleteToken = 0;
+        }
     }
-
+    printf("\n[Preprocessor]: Complete!");
     return 0;
 }

@@ -114,3 +114,38 @@ char* fileHandler_sterilizeText(char* text) {
 
     return toReturn;
 }
+
+
+uint8_t fileHandler_outputHexData(struct program_token* head, char* highByteFileName, char* lowByteFileName) {
+    struct program_token* token = head;
+    
+    //1) open files
+    FILE *lowfp, *highfp;
+    lowfp  = fopen(lowByteFileName, "w");
+    highfp = fopen(highByteFileName, "w");
+    if(lowfp == NULL || highfp == NULL) {
+        printf("\n[FileHandler]: [Error]: Unable to open output files for writing! Are file permissions setup correctly?");
+        return 1;
+    }
+    char buf[13];//Just big enough.
+
+    //2) transfer bytes
+    while(token != NULL) {
+        if(token->tokenType == PROGTOK__INSTRUCTION) {
+            sprintf(buf,":01%04X00%02X\n",token->romAddress,token->romData >> 8);//High
+            fputs(buf,highfp);
+            sprintf(buf,":01%04X00%02X\n",token->romAddress,token->romData & 0x00FF);//Low
+            fputs(buf,lowfp);
+        }
+        token = token->nextToken;
+    }
+
+    //End of file indicators
+    fputs(":00000001FF",highfp);
+    fputs(":00000001FF",lowfp);
+    fclose(highfp);
+    fclose(lowfp);
+
+    return 0;
+}
+

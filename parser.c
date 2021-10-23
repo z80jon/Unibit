@@ -1,6 +1,11 @@
 #include "parser.h"
 
 uint8_t parser(char* text, uint16_t* returnValue) {
+    if(text == NULL || text[0] == '\0') {
+        //printf("Null terminator detected");
+        *returnValue = 0;
+        return 0; //TODO verify that this is actually needed in the first place
+    }
     char* token = (char*)calloc(strlen(text)+1,sizeof(char));
     uint16_t val1 = 0, val2 = 0, scratchpad;
     enum parser_state state = PARSERSTATE__INITIAL_NUMBER;
@@ -175,7 +180,7 @@ uint8_t parser(char* text, uint16_t* returnValue) {
     }
    
     free(token);
-    printf("\n[Parser]: Translated \"%s\" to: %d/0x%X.",text, val1, val1);
+    //printf("\n[Parser]: Translated \"%s\" to: %d/0x%X.",text, val1, val1);
 
     *returnValue = val1;
     return 0;
