@@ -11,8 +11,8 @@ enum libraryTokenType{LIBTOK_UNDEFINED, LIBTOK__LABEL, LIBTOK__VARIABLE};//TODO 
 
 struct program_token {
     char* instruction_text;             ///the raw text of the code--minus spaces and /r/n--between one ; and the next ;.
+    enum Opcode opcode;                 ///If this is a PROGTOK__INSTRUCTION token, this will be populated with the opcode enum
     enum programTokenType tokenType;    ///The type of token this is
-    enum Opcode opcode;                 ///Stores the type of opcode in use
     uint16_t romData;                   ///Post-assembly, this will contain the raw data to be stored in EEPROMs.
     struct program_token* nextToken;    ///pointer to the next token in the chain. NULL = end of code
     struct program_token* prevToken;    ///pointer to the previous token in the chain. NULL = start of code.
