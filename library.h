@@ -22,6 +22,9 @@
 #define LIBRARY_STATUS__TOKEN_IS_VAR     10
 #define LIBRARY_STATUS__DANGLING_LABEL   11 ///This error will occur if a label is declared at the end of a program with no instructions following it.
 
+
+#define DEBUG_LIBRARY 0
+
 static struct library_token* libraryTokens = NULL; ///Pointer to array of Library tokens
 static uint16_t numLibraryTokens = 0;           ///Holds the current number of library tokens
 
@@ -38,7 +41,7 @@ static const char VALID_NON_ALPHANUM_CHARS[] = {'_'};
  * 
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
-uint8_t library_addVariable(char* name, uint16_t numBits);
+uint8_t library__add_variable(char* name, uint16_t numBits);
 
 
 /**
@@ -49,7 +52,7 @@ uint8_t library_addVariable(char* name, uint16_t numBits);
  * @param address the starting address for the variable (address increases with numBits)
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX, LIBRARY_STATUS__ADDR_CONFLICT
  */
-uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t address);
+uint8_t library__add_variable_with_address(char* name, uint16_t numBits, uint16_t address);
 
 
 /**
@@ -59,7 +62,7 @@ uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t ad
  * @param address a pointer which will be populated with the address
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_NOT_FOUND, LIBRARY_STATUS__ADDR_UNASSIGNED
  */
-uint8_t library_getVariableAddress(char* name, uint16_t* address);
+uint8_t library__get_variable_address(char* name, uint16_t* address);
 
 
 /**
@@ -67,7 +70,7 @@ uint8_t library_getVariableAddress(char* name, uint16_t* address);
  * 
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__MEMORY_TRAFFIC
  */
-uint8_t library_assignVariableAddresses();
+uint8_t library__assign_variable_addresses();
 
 
 //====================== Label functions ======================//
@@ -78,7 +81,7 @@ uint8_t library_assignVariableAddresses();
  * @param name the name of the label
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
-uint8_t library_addLabel(char* name);
+uint8_t library__add_label(char* name);
 
 
 /**
@@ -88,7 +91,7 @@ uint8_t library_addLabel(char* name);
  * @param rom_address the exact ROM address that the label points to
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
-uint8_t library_addLabelWithAddress(char* name, uint16_t rom_address);
+uint8_t library__add_label_with_address(char* name, uint16_t rom_address);
 
 
 /**
@@ -98,7 +101,7 @@ uint8_t library_addLabelWithAddress(char* name, uint16_t rom_address);
  * @param rom_address the address to set the label to point to
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_NOT_FOUND, 
  */
-uint8_t library_setLabelAddress(char* name, uint16_t rom_address);
+uint8_t library__set_label_address(char* name, uint16_t rom_address);
 
 
 /**
@@ -108,7 +111,7 @@ uint8_t library_setLabelAddress(char* name, uint16_t rom_address);
  * @param rom_address 
  * @return uint8_t 
  */
-uint8_t library_getLabelAddress(char* name, uint16_t* rom_address);
+uint8_t library__get_label_address(char* name, uint16_t* rom_address);
 
 
 /**
@@ -117,7 +120,7 @@ uint8_t library_getLabelAddress(char* name, uint16_t* rom_address);
  * @param head the head node of the program
  * @return LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__UNKNOWN_ERROR LIBRARY_STATUS__DANGLING_LABEL
  */
-uint8_t library_resolveLabelAddresses(struct program_token* head);
+uint8_t library__resolve_label_addresses(struct program_token* head);
 
 //====================== Misc functions ======================//
 
@@ -128,7 +131,7 @@ uint8_t library_resolveLabelAddresses(struct program_token* head);
 void library__free_memory();
 
 
-enum libraryTokenType library_getTokenType(char* name);
+enum libraryTokenType library__get_token_type(char* name);
 
 //====================== Internal-use functions ======================//
 
@@ -138,7 +141,7 @@ enum libraryTokenType library_getTokenType(char* name);
  * @param name the name of the token to retrieve
  * @return struct library_token the token requested, else 0.
  */
-struct library_token* library_internal__getToken(char* name);
+struct library_token* library_internal__get_token(char* name);
 
 /**
  * @brief Checks the syntax of the name against existing naming conventions.

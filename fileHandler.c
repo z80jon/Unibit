@@ -3,10 +3,10 @@
 int fileHandler__read_in_file(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
 
     //Open file
-    printf("\nReading in file '%s'",filePath);
+    if(FILEHANDLER_DEBUG)printf("\nReading in file '%s'",filePath);
     FILE *fp = fopen(filePath, "r");
     if(fp == NULL) {
-        printf("\nERROR: input file not found!");
+        printf("\n[Filehandler]: [Error]: input file not found!");
         return 1;
     }
 
@@ -62,10 +62,11 @@ int fileHandler__read_in_file(char* filePath, char*** linesOfTextFromFile, uint3
     *numberOfLines = numLines;
 
 
-    printf("\nRead in %d lines!\n",numLines);
+    if(FILEHANDLER_DEBUG)printf("\nRead in %d lines!\n",numLines);
     fclose(fp);
     return 0;
 }
+
 
 uint8_t fileHandler__does_file_exist(char* filePath) {
     return access( filePath, F_OK ) == 0;

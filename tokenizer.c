@@ -26,7 +26,7 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
         if(sterilizedLineText != NULL) {
 
 
-            if(tokenizer_hasLabel(sterilizedLineText)) {
+            if(tokenizer__has_label(sterilizedLineText)) {
                 //printf("\nLine %d: \"%s\" --> Label",currentLine+1,sterilizedLineText);
                 next = tokenizer_makeLabelToken(sterilizedLineText);
                 for(uint8_t i = 0; i < strlen(sterilizedLineText); i++) {

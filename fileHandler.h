@@ -10,6 +10,9 @@
 #include <ctype.h>
 #include "datastructures.h"
 
+#define FILEHANDLER_DEBUG 0
+
+
 /**
  * @brief Reads in the file in path filePath (relative to folder program is executed in)
  * 
@@ -28,6 +31,7 @@ int fileHandler__read_in_file(char* filePath, char*** linesOfTextFromFile, uint3
  */
 uint8_t fileHandler__does_file_exist(char* filePath);
 
+
 /**
  * @brief takes a line of text, and returns only the useful parts of it, stripping out comments, blank lines,
  *        spaces between words (leaving just 1), etc.
@@ -44,7 +48,7 @@ char* fileHandler__sterilize_text(char* text);
  * @param lowByte the file name to output low byte Intel hex data into
  * @return uint8_t 0 if successful, else 1 (likely I/O issue)
  */
-uint8_t fileHandler_output_hex_data(struct program_token* head, char* highByteFileName, char* lowByteFileName);
+uint8_t fileHandler__output_hex_data(struct program_token* head, char* highByteFileName, char* lowByteFileName);
 
 
 #endif

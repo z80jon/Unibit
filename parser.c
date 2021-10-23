@@ -69,7 +69,7 @@ uint8_t parser(char* text, uint16_t* returnValue) {
                 break;
 
             case '[':
-                if(library_getVariableAddress(token,&scratchpad)!=LIBRARY_STATUS__NO_ERRORS) {
+                if(library__get_variable_address(token,&scratchpad)!=LIBRARY_STATUS__NO_ERRORS) {
                     printf("\n[Parser]: [ERROR]: Indexing attempted on non-variable \"%s\"",token);
                     return 1;
                 }
@@ -194,9 +194,9 @@ uint8_t parser_getValueOfToken(char* text, uint16_t* returnValue) {
     } else if(isdigit(text[0])) {//Decimal
         if(sscanf(text, "%d", (int*)returnValue) != 1)
             return 1;
-    } else if(library_getVariableAddress(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);//Variable
+    } else if(library__get_variable_address(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);//Variable
     
-    else if(library_getLabelAddress(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);//Label
+    else if(library__get_label_address(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);//Label
 
     else
         return 1;

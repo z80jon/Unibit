@@ -12,14 +12,13 @@ void assembler_run(char* inputFile, char* outputFile) {
     head = tokenizer_tokenize(inputFile);//assembler_tokenizeText(linesOfText, numLines)3;
     printf("\nTokenization complete!");
 
-    if(preprocessor_run(head) != 0) {
+    if(preprocessor__run(head) != 0) {
         printf("\n[FATAL ERROR]: [Assembler]: Preprocessor failed!");
     }
 
-    printf("\n[Library]: Assigning variable addresses...");
-    library_assignVariableAddresses();
+    library__assign_variable_addresses();
     printf("\n[Library]: Assigning label addresses...");
-    library_resolveLabelAddresses(head);
+    library__resolve_label_addresses(head);
     printf("\n[Library]: Complete!");
 
     //Step make the output file
@@ -27,7 +26,7 @@ void assembler_run(char* inputFile, char* outputFile) {
         printf("\n[Assembler]: [Error]: Assembly failed!");
     }
 
-    if(fileHandler_output_hex_data(head, "output_high.hex", "output_low.hex") != 0) {
+    if(fileHandler__output_hex_data(head, "output_high.hex", "output_low.hex") != 0) {
     }
 
     library__free_memory();

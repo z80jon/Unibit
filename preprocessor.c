@@ -2,7 +2,7 @@
 
 
 
-uint8_t preprocessor_run(struct program_token* head) {
+uint8_t preprocessor__run(struct program_token* head) {
     printf("\n[Preprocessor]: Starting");
     struct program_token* token = head;
     struct program_token* token2;
@@ -27,7 +27,7 @@ uint8_t preprocessor_run(struct program_token* head) {
             strtok_token = strtok(NULL, " ");
             uint8_t errorCode;
             if(strtok_token == NULL) {//Case: var <name> --> assume size is one bit.
-                errorCode = library_addVariable(varName, 1);
+                errorCode = library__add_variable(varName, 1);
 
             } else {
                 uint16_t numBits;
@@ -38,7 +38,7 @@ uint8_t preprocessor_run(struct program_token* head) {
                 strtok_token = strtok(NULL, " ");
 
                 if(strtok_token == NULL) {//Case: var <name> <numBits>
-                    errorCode = library_addVariable(varName, numBits);
+                    errorCode = library__add_variable(varName, numBits);
 
                 } else {//Case: var <name> <numBits> <address>
                     uint16_t addr;
@@ -46,7 +46,7 @@ uint8_t preprocessor_run(struct program_token* head) {
                         printf("\n[Preprocessor]: [FATAL ERROR]: Failed to parse meaning of \"%s\" from text \"%s\" on line %d",strtok_token, token->instruction_text, token->lineNumber);
                         return 1;
                     }
-                    errorCode = library_addVariableWithAddress(varName, numBits, addr);
+                    errorCode = library__add_variable_with_address(varName, numBits, addr);
                 }
             }
 
@@ -79,7 +79,7 @@ uint8_t preprocessor_run(struct program_token* head) {
         //Label: enter it into library, but don't remove from chain until able to resolve to a ROM address.
         if(token->tokenType == PROGTOK__LABEL) {
             //printf("\n[Preprocessor]: Found label with text '%s'",token->instruction_text);
-            uint8_t errorCode = library_addLabel(token->instruction_text);
+            uint8_t errorCode = library__add_label(token->instruction_text);
             if(errorCode == LIBRARY_STATUS__NAME_EXISTS) {
                 printf("\n\n[FATAL ERROR]: [Preprocessor]: On line %d, label '%s' was defined but is already in use!",token->lineNumber,token->instruction_text);
                 return 1;
