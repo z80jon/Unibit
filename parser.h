@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include "library.h"
 
+#define DEBUG_PARSER 0
 
 enum parser_state{PARSERSTATE__INITIAL_NUMBER, PARSERSTATE__ADD, PARSERSTATE__SUBTRACT, PARSERSTATE__MULTIPLY, PARSERSTATE__INDEX, PARSERSTATE__EXPECTING_OPERATOR};
 
@@ -33,7 +34,7 @@ uint8_t parser(char* text, uint16_t* returnValue);
  * @param returnValue pointer to where to store the decoded value of the token text
  * @return uint8_t 1 if unable to decode token, else 0.
  */
-uint8_t parser_getValueOfToken(char* text, uint16_t* returnValue);
+uint8_t parser__get_value_of_token(char* text, uint16_t* returnValue);
 
 
 /**
@@ -46,7 +47,7 @@ uint8_t parser_getValueOfToken(char* text, uint16_t* returnValue);
  * @param c the char to check for the presence of an end-of-token symbol
  * @return uint8_t 1 if end of token, else 0
  */
-uint8_t parser_internal__isEndOfToken(char c);
+uint8_t parser_internal__is_end_of_token(char c);
 
 
 #endif

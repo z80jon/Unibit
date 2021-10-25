@@ -25,7 +25,7 @@
 
 
 
-#define DEBUG_LIBRARY 0
+#define DEBUG_LIBRARY 1
 
 static struct library_token* libraryTokens = NULL; ///Pointer to array of Library tokens
 static uint16_t numLibraryTokens = 0;           ///Holds the current number of library tokens

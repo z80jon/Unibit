@@ -87,10 +87,12 @@ uint8_t preprocessor__run(struct program_token* head) {
             }
         }
 
-        token = token->nextToken;
+        
         if(deleteToken) {
-            token = tokenizer__remove_token_from_chain(token);
+            //token = tokenizer__remove_token_from_chain(token);
             deleteToken = 0;
+        } else {
+            token = token->nextToken;
         }
     }
     printf("\n[Preprocessor]: Complete!");

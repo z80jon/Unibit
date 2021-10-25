@@ -5,7 +5,7 @@
 
 //====================== Main Method ======================//
 
-struct program_token* tokenizer_tokenize(char* inputFile) {
+struct program_token* tokenizer__tokenize(char* inputFile) {
 
     uint32_t numLines;
     char** linesOfText;
@@ -16,7 +16,6 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
     struct program_token* next;
     uint16_t currentLine = 0;
     uint16_t romAddress = 0;
-    head->prevToken = NULL;
     head->nextToken = NULL;
     head->instruction_text = NULL;
     head->tokenType = PROGTOK__HEAD;
@@ -84,7 +83,6 @@ struct program_token* tokenizer_tokenize(char* inputFile) {
     //removing it.
     head = head->nextToken;
     free(head->prevToken);
-    head->prevToken = NULL;
     return head;
 }
 

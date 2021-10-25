@@ -4,6 +4,7 @@
 
 
 uint8_t parser(char* text, uint16_t* returnValue) {
+    if(DEBUG_PARSER)printf("\n[Parser]: Started parsing \"%s\".",text);
     if(text == NULL || text[0] == '\0') {
         //printf("Null terminator detected");
         *returnValue = 0;
@@ -16,13 +17,13 @@ uint8_t parser(char* text, uint16_t* returnValue) {
     while(textIndex < strlen(text)) {
 
         //1) copy over bytes until a null term or math operator or space or parentheses is found
-        while(!parser_internal__isEndOfToken(text[textIndex])) {
+        while(!parser_internal__is_end_of_token(text[textIndex])) {
             token[tokenIndex++] = text[textIndex++];
         }
 
         //2) TODO write this
         if(tokenIndex > 0) {
-            if(parser_getValueOfToken(token, &val2)) {
+            if(parser__get_value_of_token(token, &val2)) {
                 printf("\n[Parser]: [ERROR]: Unable to resolve meaning of \"%s\"",token);
                 return 1;
             }
@@ -183,14 +184,14 @@ uint8_t parser(char* text, uint16_t* returnValue) {
     }
    
     free(token);
-    //printf("\n[Parser]: Translated \"%s\" to: %d/0x%X.",text, val1, val1);
+    if(DEBUG_PARSER)printf("\n[Parser]: Translated \"%s\" to: %d/0x%X.",text, val1, val1);
 
     *returnValue = val1;
     return 0;
 }
 
 
-uint8_t parser_getValueOfToken(char* text, uint16_t* returnValue) {
+uint8_t parser__get_value_of_token(char* text, uint16_t* returnValue) {
     if(strlen(text) > 2 && text[0] == '0' && text[1] == 'x') {//Hex
         if(sscanf(text,"%x",(unsigned int*)returnValue) != 1)
             return 1;
@@ -207,7 +208,7 @@ uint8_t parser_getValueOfToken(char* text, uint16_t* returnValue) {
 }
 
 
-uint8_t parser_internal__isEndOfToken(char c) {
+uint8_t parser_internal__is_end_of_token(char c) {
    return (c == ' ') || (c == '[') || (c == ']') || (c == '*') || (c == '+') || (c == '-') || (c == '\0') || (c=='(') || (c==')');
 }
 

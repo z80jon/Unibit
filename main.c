@@ -14,10 +14,10 @@ int main(int argc, char *argv[]) {
     if(argc == 3) {
         if(fileHandler__does_file_exist(argv[2]))
             printf("\nNOTE: output file file \"%s\" exists, and will be overwritten!", argv[2]);
-        assembler_run(argv[1], argv[2]);
+        assembler__run(argv[1], argv[2]);
     } else {
         printf("\nNOTE: Output will be placed in \"output.hex\". If it already exists, it will be overwritten.");
-        assembler_run(argv[1], "output.hex");
+        assembler__run(argv[1], "output.hex");
     }
 
     return 0;

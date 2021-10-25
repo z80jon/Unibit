@@ -20,6 +20,16 @@ struct program_token {
     uint16_t romAddress;                ///The hexadecimal address the instruction will be stored in in ROM
 };
 
+/**
+ * Possible changes in overhauling this system:
+ * 
+ * -instruction_text is changed to operand_text
+ * -opcode is removed (unneeded)
+ * -prevToken is removed (not really needed)
+ * -fileNumber is added (multi-file support)
+ * 
+ */
+
 
 //Library token system: uses ArrayList
 

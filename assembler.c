@@ -3,7 +3,7 @@
 
 
 
-void assembler_run(char* inputFile, char* outputFile) {
+void assembler__run(char* inputFile, char* outputFile) {
 
     //1) Read in main file, while at the same time...
     //   >removing comments, extra whitespaces, and blank/empty lines
@@ -12,7 +12,7 @@ void assembler_run(char* inputFile, char* outputFile) {
     //   >removing variable declarations and adding them to a library
     //   >adding labels to a library to be resolved later (once addresses are assigned)
     printf("\nTokenizing file...");
-    head = tokenizer_tokenize(inputFile);//assembler_tokenizeText(linesOfText, numLines)3;
+    head = tokenizer__tokenize(inputFile);//assembler_tokenizeText(linesOfText, numLines)3;
     printf("\nTokenization complete!");
 
     if(preprocessor__run(head) != 0) {
@@ -20,9 +20,7 @@ void assembler_run(char* inputFile, char* outputFile) {
     }
 
     library__assign_variable_addresses();
-    printf("\n[Library]: Assigning label addresses...");
     library__resolve_label_addresses(head);
-    printf("\n[Library]: Complete!");
 
     //Step make the output file
     if(assembler__generate_hex(head) != 0) {
@@ -84,7 +82,7 @@ uint8_t assembler__generate_hex(struct program_token* head) {
         }
 
         token = token->nextToken;
-        printf("\n%d",token);
+        //printf("\n%d",token);
     }
     printf("\n[Hex Generation]: Complete!");
     return 0;
