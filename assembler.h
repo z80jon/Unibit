@@ -10,19 +10,12 @@
 #include "tokenizer.h"
 #include "preprocessor.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                                       VARIABLES AND CONSTANTS                                          ////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * @brief Is the 'head' node of the LinkedList of program_tokens that the assembler will step through in the assembly
- *        process.
- */
-static struct program_token* head;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                                               FUNCTIONS                                                ////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static struct program_token* head; ///Pointer to head node of linked list of program tokens (see datastructures.h for more info)
+
+
 
 
 /**
@@ -32,21 +25,18 @@ static struct program_token* head;
  * @param inputFile  Path to the input file of code to be assembled.
  * @param outputFile Path to output the binary ROM data to.
  */
-void assembler_run(char* inputFile, char* outputFile);
+void assembler__run(char* inputFile, char* outputFile);
+
 
 /**
- * @brief takes in the raw lines of text from a file and makes 
+ * @brief Generates hex ROM data for all of the tokens, referencing the library and parsing data as necessary.
  * 
- * @param text char** to the raw text of the file. The first dimension is the line, and the second, chars within that
- *             line.
+ * @param head the starting token of the chain
+ * @return uint8_t 0 if successful, else 1
  */
-struct instruction_token* assembler_tokenizeText(char** text, uint16_t numLines);
-
-
-void assembler_haltAssembly();
+uint8_t assembler__generate_hex(struct program_token* head);
 
 
 
-uint8_t assembler__generate_hex(struct instuction_token token);
 
 #endif

@@ -1,13 +1,17 @@
 #include "library.h"
 
 
-uint8_t library_addVariable(char* name, uint16_t numBits) {
+
+
+//====================== Variable Functions ======================//
+
+uint8_t library__add_variable(char* name, uint16_t numBits) {
     if(numBits == 0) return LIBRARY_STATUS__INVALID_SIZE;
     uint8_t errorCode = library_internal__add_generic_token(name);
     if(errorCode != LIBRARY_STATUS__NO_ERRORS)
         return errorCode;
 
-    struct library_token* token = library_internal__getToken(name);
+    struct library_token* token = library_internal__get_token(name);
     token->size_if_variable = numBits;
     token->libraryTokenType = LIBTOK__VARIABLE;
 
@@ -15,7 +19,7 @@ uint8_t library_addVariable(char* name, uint16_t numBits) {
 }
 
 
-uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t address) {
+uint8_t library__add_variable_with_address(char* name, uint16_t numBits, uint16_t address) {
     if(numBits == 0) return LIBRARY_STATUS__INVALID_SIZE;
     if(library_internal__check_for_RAM_address_conflicts(numBits, address) != LIBRARY_STATUS__NO_ERRORS)
         return LIBRARY_STATUS__ADDR_CONFLICT;
@@ -24,7 +28,7 @@ uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t ad
     if(errorCode != LIBRARY_STATUS__NO_ERRORS)
         return errorCode;
 
-    struct library_token* token = library_internal__getToken(name);
+    struct library_token* token = library_internal__get_token(name);
     token->size_if_variable = numBits;
     token->libraryTokenType = LIBTOK__VARIABLE;
     token->address = address;
@@ -34,8 +38,8 @@ uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t ad
 }
 
 
-uint8_t library_getVariableAddress(char* name, uint16_t* address) {
-    struct library_token* token = library_internal__getToken(name);
+uint8_t library__get_variable_address(char* name, uint16_t* address) {
+    struct library_token* token = library_internal__get_token(name);
     if(token == NULL)
         return LIBRARY_STATUS__NAME_NOT_FOUND;
     if(token->address_defined == 0)
@@ -46,7 +50,8 @@ uint8_t library_getVariableAddress(char* name, uint16_t* address) {
 }
 
 
-uint8_t library_assignVariableAddresses() {
+uint8_t library__assign_variable_addresses() {
+    if(DEBUG_LIBRARY)printf("\n[Library]: Assigning variable addresses...");
     for(uint16_t i = 0; i < numLibraryTokens; i++) {
         struct library_token* token = &(libraryTokens[i]);
         if(token->libraryTokenType == LIBTOK__VARIABLE && token->address_defined == 0) {
@@ -61,17 +66,23 @@ uint8_t library_assignVariableAddresses() {
 
             //If we couldn't find free memory for the token, memory is full or too fragmented (by the user, or with this simple placement algorithm)
             //to be able to find locations for every variable.
-            if(token->address_defined == 0)
+            if(token->address_defined == 0) {
+                printf("\n[Library]: [Error]: Variable address space assignment failed! Reason: unable to find space for variable \"%s\"! This could be due to several factors:",token->name);
+                printf("\n\t1) If addresses are manually specified, there is overlap with another variable\n\t2) All memory is in use\n\t3) Manual address specification has fragmented the memory such that a location cannot be found");
+                printf("\n\t4) The primitive algorithm in use by the address space assigner could not allocate blocks adequately so as to find a spot. (In this case, rearranging declarations to put large variables first may help)");
                 return LIBRARY_STATUS__MEMORY_TRAFFIC;
+            }
+                
         }
     }
 
+    if(DEBUG_LIBRARY)printf("\n[Library]: Variable address space assignment complete!");
     return LIBRARY_STATUS__NO_ERRORS;
 }
 
 
-uint8_t library_getVariableSize(char* name, uint16_t* size) {
-    struct library_token* token = library_internal__getToken(name);
+uint8_t library_get_variable_size(char* name, uint16_t* size) {
+    struct library_token* token = library_internal__get_token(name);
     if(token == NULL)
         return LIBRARY_STATUS__NAME_NOT_FOUND;
     if(token->address_defined == 0)
@@ -82,26 +93,27 @@ uint8_t library_getVariableSize(char* name, uint16_t* size) {
 }
 
 
-//====================== Label functions ======================//
 
 
-uint8_t library_addLabel(char* name) {
+//====================== Label Functions ======================//
+
+uint8_t library__add_label(char* name) {
     uint8_t errorCode = library_internal__add_generic_token(name);
     if(errorCode != LIBRARY_STATUS__NO_ERRORS)
         return errorCode;
 
-    struct library_token* token = library_internal__getToken(name);
+    struct library_token* token = library_internal__get_token(name);
     token->libraryTokenType = LIBTOK__LABEL;
     return LIBRARY_STATUS__NO_ERRORS;
 }
 
 
-uint8_t library_addLabelWithAddress(char* name, uint16_t rom_address) {
+uint8_t library__add_label_with_address(char* name, uint16_t rom_address) {
     uint8_t errorCode = library_internal__add_generic_token(name);
     if(errorCode != LIBRARY_STATUS__NO_ERRORS)
         return errorCode;
 
-    struct library_token* token = library_internal__getToken(name);
+    struct library_token* token = library_internal__get_token(name);
     token->libraryTokenType = LIBTOK__LABEL;
     token->address_defined = 1;
     token->address = rom_address;
@@ -110,8 +122,8 @@ uint8_t library_addLabelWithAddress(char* name, uint16_t rom_address) {
 }
 
 
-uint8_t library_setLabelAddress(char* name, uint16_t rom_address) {
-    struct library_token* token = library_internal__getToken(name);
+uint8_t library__set_label_address(char* name, uint16_t rom_address) {
+    struct library_token* token = library_internal__get_token(name);
     if(token == NULL)
         return LIBRARY_STATUS__NAME_NOT_FOUND;
     
@@ -122,8 +134,8 @@ uint8_t library_setLabelAddress(char* name, uint16_t rom_address) {
 }
 
 
-uint8_t library_getLabelAddress(char* name, uint16_t* rom_address) {
-    struct library_token* token = library_internal__getToken(name);
+uint8_t library__get_label_address(char* name, uint16_t* rom_address) {
+    struct library_token* token = library_internal__get_token(name);
     if(token == NULL)
         return LIBRARY_STATUS__NAME_NOT_FOUND;
     if(token->address_defined == 0)
@@ -134,13 +146,14 @@ uint8_t library_getLabelAddress(char* name, uint16_t* rom_address) {
 }
 
 
-uint8_t library_resolveLabelAddresses(struct program_token* head) {
+uint8_t library__resolve_label_addresses(struct program_token* head) {
     struct program_token* labelPointer; //Advances along the linked list seeking out labels to point to opcode ROM addresses
     struct program_token* opcodePointer;//Advances along the linked list just ahead of labelPointer to find the opcode the label should point to.
-
+    if(DEBUG_LIBRARY)printf("\n[Library]: Resolving label addresses...");
     labelPointer = head;
     opcodePointer = head;
     while(labelPointer != NULL) {
+        //printf("\nOn label \"%s\" and search is on \"%s\"",labelPointer->instruction_text,opcodePointer->instruction_text);
         if(labelPointer->tokenType == PROGTOK__LABEL) {
             opcodePointer = labelPointer->nextToken;
             while(opcodePointer->tokenType != PROGTOK__INSTRUCTION && opcodePointer != NULL) {
@@ -149,11 +162,11 @@ uint8_t library_resolveLabelAddresses(struct program_token* head) {
 
             //Bad user input case: a label was declared and that's just the end of the program--no opcodes follow
             if(opcodePointer == NULL) {
-                printf("\n[Library]: [FATAL ERROR]: Dangling label with name \"%s\" detected!",labelPointer->instruction_text);
+                printf("\n[Library]: [Error]: Label address resolution failed! Dangling label with name \"%s\" detected!",labelPointer->instruction_text);
                 return LIBRARY_STATUS__DANGLING_LABEL;
             }
 
-            if(library_setLabelAddress(labelPointer->instruction_text, opcodePointer->romAddress) != LIBRARY_STATUS__NO_ERRORS) {
+            if(library__set_label_address(labelPointer->instruction_text, opcodePointer->romAddress) != LIBRARY_STATUS__NO_ERRORS) {
                 printf("\n[Library]: [FATAL ERROR]: Tried to set address of label '%s', but it was not in the dictionary! This should only ever be printed if something has gone wrong with the library code.",labelPointer->instruction_text);
                 return LIBRARY_STATUS__UNKNOWN_ERROR;
             } else {
@@ -161,13 +174,18 @@ uint8_t library_resolveLabelAddresses(struct program_token* head) {
             }
 
         }
+        
         labelPointer = labelPointer->nextToken;
     }
 
+    if(DEBUG_LIBRARY)printf("\n[Library]: Label address resolution complete!");
     return LIBRARY_STATUS__NO_ERRORS;
 }
 
-//====================== Misc functions ======================//
+
+
+
+//====================== Misc Functions ======================//
 
 void library__free_memory() {
     printf("\n======== Library Tokens =======\n");
@@ -198,8 +216,8 @@ void library__free_memory() {
 }
 
 
-enum libraryTokenType library_getTokenType(char* name) {
-    struct library_token* token = library_internal__getToken(name);
+enum libraryTokenType library__get_token_type(char* name) {
+    struct library_token* token = library_internal__get_token(name);
     if(token == NULL)
         return LIBRARY_STATUS__NAME_NOT_FOUND;
     
@@ -207,10 +225,11 @@ enum libraryTokenType library_getTokenType(char* name) {
 }
 
 
-//====================== Internal-use functions ======================//
 
 
-struct library_token* library_internal__getToken(char* name) {
+//====================== Internal-use Functions ======================//
+
+struct library_token* library_internal__get_token(char* name) {
     for(uint16_t i = 0; i < numLibraryTokens; i++) {
         if(strcmp(libraryTokens[i].name, name) == 0)
             return &(libraryTokens[i]);
@@ -250,7 +269,7 @@ uint8_t library_internal__add_generic_token(char* name) {
     uint8_t errorCode = library_internal__check_syntax_of_name(name);
     if(errorCode != LIBRARY_STATUS__NO_ERRORS)
         return errorCode;
-    if(library_internal__getToken(name) != NULL)
+    if(library_internal__get_token(name) != NULL)
         return LIBRARY_STATUS__NAME_EXISTS;
 
     

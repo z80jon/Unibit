@@ -1,12 +1,15 @@
 #include "fileHandler.h"
 
-int fileHandler_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
+
+
+
+int fileHandler__read_in_file(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
 
     //Open file
-    printf("\nReading in file '%s'",filePath);
+    if(FILEHANDLER_DEBUG)printf("\nReading in file '%s'",filePath);
     FILE *fp = fopen(filePath, "r");
     if(fp == NULL) {
-        printf("\nERROR: input file not found!");
+        printf("\n[Filehandler]: [Error]: input file not found!");
         return 1;
     }
 
@@ -62,17 +65,18 @@ int fileHandler_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t
     *numberOfLines = numLines;
 
 
-    printf("\nRead in %d lines!\n",numLines);
+    if(FILEHANDLER_DEBUG)printf("\nRead in %d lines!\n",numLines);
     fclose(fp);
     return 0;
 }
 
-uint8_t fileHandler_doesFileExist(char* filePath) {
+
+uint8_t fileHandler__does_file_exist(char* filePath) {
     return access( filePath, F_OK ) == 0;
 }
 
 
-char* fileHandler_sterilizeText(char* text) {
+char* fileHandler__sterilize_text(char* text) {
     if(strlen(text) == 0)
         return NULL;
     
@@ -114,3 +118,40 @@ char* fileHandler_sterilizeText(char* text) {
 
     return toReturn;
 }
+
+
+uint8_t fileHandler__output_hex_data(struct program_token* head, char* highByteFileName, char* lowByteFileName) {
+    struct program_token* token = head;
+    
+    //1) open files
+    FILE *lowfp, *highfp;
+    lowfp  = fopen(lowByteFileName, "w");
+    highfp = fopen(highByteFileName, "w");
+    if(lowfp == NULL || highfp == NULL) {
+        printf("\n[FileHandler]: [Error]: Unable to open output files for writing! Are file permissions setup correctly?");
+        return 1;
+    }
+    char buf[13];//Just big enough.
+
+    //2) transfer bytes
+    while(token != NULL) {
+        if(token->tokenType == PROGTOK__INSTRUCTION) {
+            sprintf(buf,":01%04X00%02X\n",token->romAddress,token->romData >> 8);//High
+            fputs(buf,highfp);
+            sprintf(buf,":01%04X00%02X\n",token->romAddress,token->romData & 0x00FF);//Low
+            fputs(buf,lowfp);
+        }
+        token = token->nextToken;
+    }
+
+    //End of file indicators
+    fputs(":00000001FF",highfp);
+    fputs(":00000001FF",lowfp);
+    fclose(highfp);
+    fclose(lowfp);
+
+    return 0;
+}
+
+
+
