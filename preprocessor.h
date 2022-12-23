@@ -1,13 +1,8 @@
 #ifndef PREPROCESSOR_H_
 #define PREPROCESSOR_H_
 
-#include "tokenizer.h"
-#include "library.h"
+#include <stdint.h>
 #include "datastructures.h"
-#include "parser.h"
-#include <stdio.h>
-
-
 
 
 /**
@@ -18,7 +13,7 @@
  * @param head 
  * @return uint8_t 0 if successful, else 1
  */
-uint8_t preprocessor__run(struct program_token* head);
+uint8_t preprocessor_run(struct programToken_t* head);
 
 
 

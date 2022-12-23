@@ -26,7 +26,7 @@ There are several key files in the assembler, each of which has a key task.
 
 main.h/.c: 
 
-fileHandler.h/.c: Handle reading in files and cleaning up the text in them, as well as generating Intel hex files
+fileIO.h/.c: Handle reading in files and cleaning up the text in them, as well as generating Intel hex files
 
 parser.h/.c: interprets math strings, recognizing references to the symbol library where relevant, and calculating values.
 

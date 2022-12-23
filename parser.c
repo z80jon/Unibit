@@ -1,6 +1,27 @@
 #include "parser.h"
 
 
+//===== Local Variables and Functions =====//
+
+enum parser_state{
+    PARSERSTATE__INITIAL_VALUE = 0, //< Parser is in its initial state and expecting a new value
+    PARSERSTATE__ADD,               //< Parser will subtract next value decoded
+    PARSERSTATE__SUBTRACT,          //< Parser will subtract next value decoded
+    PARSERSTATE__MULTIPLY,          //< Parser will subtract next value decoded
+    PARSERSTATE__INDEX,             //< Parser will index (add value within brackets) to item
+    PARSERSTATE__EXPECTING_OPERATOR //< Parser is expecting a mathematical operator
+};
+
+/**
+ * @brief Returns true if the character passed is one that should delineate the token and indicate
+ *        to the parser that the number or variable/define/etc. is ready for interpretation.
+ * 
+ *        This function is a glorified macro that just identifies end-of-token symbols.
+ * 
+ * @param c the char to check for the presence of an end-of-token symbol
+ * @return true if c is an end-of-token symbol, else false
+ */
+bool bIsTokenDelineator(char c);
 
 
 uint8_t parser(char* text, uint16_t* returnValue) {
@@ -12,12 +33,12 @@ uint8_t parser(char* text, uint16_t* returnValue) {
     }
     char* token = (char*)calloc(strlen(text)+1,sizeof(char));
     uint16_t val1 = 0, val2 = 0, scratchpad;
-    enum parser_state state = PARSERSTATE__INITIAL_NUMBER;
+    enum parser_state state = PARSERSTATE__INITIAL_VALUE;
     uint8_t textIndex = 0, tokenIndex = 0;
     while(textIndex < strlen(text)) {
 
-        //1) copy over bytes until a null term or math operator or space or parentheses is found
-        while(!parser_internal__is_end_of_token(text[textIndex])) {
+        //1) copy over characters until a null term or math operator or space or parentheses is found
+        while(!bIsTokenDelineator(text[textIndex])) {
             token[tokenIndex++] = text[textIndex++];
         }
 
@@ -29,7 +50,7 @@ uint8_t parser(char* text, uint16_t* returnValue) {
             }
                 
             switch(state) {
-                case PARSERSTATE__INITIAL_NUMBER:
+                case PARSERSTATE__INITIAL_VALUE:
                     val1 = val2;
                     state = PARSERSTATE__EXPECTING_OPERATOR;
                     break;
@@ -55,6 +76,10 @@ uint8_t parser(char* text, uint16_t* returnValue) {
                 case PARSERSTATE__EXPECTING_OPERATOR:
                     printf("\n[Parser]: [ERROR]: Was expecting another operator and got \"%s\".",token);
                     break;
+
+                case PARSERSTATE__INDEX:
+                    //NYI
+                    break;
             }
 
         }
@@ -73,9 +98,17 @@ uint8_t parser(char* text, uint16_t* returnValue) {
                 break;
 
             case '[':
-                if(library__get_variable_address(token,&scratchpad)!=LIBRARY_STATUS__NO_ERRORS) {
+                if(library_getVariableAddress(token,&scratchpad)!=LIBRARY_STATUS__NO_ERRORS) {
                     printf("\n[Parser]: [ERROR]: Indexing attempted on non-variable \"%s\"",token);
                     return 1;
+
+            case PARSERSTATE__EXPECTING_OPERATOR:
+                //NYI
+                break;
+
+            case PARSERSTATE__INDEX:
+                //NYI
+                break;
                 }
 
                 textIndex++;//Advance past the first '('
@@ -146,7 +179,7 @@ uint8_t parser(char* text, uint16_t* returnValue) {
                 }
 
                 switch(state) {
-                    case PARSERSTATE__INITIAL_NUMBER:
+                    case PARSERSTATE__INITIAL_VALUE:
                         val1 = val2;
                         break;
                     case PARSERSTATE__ADD:
@@ -162,6 +195,18 @@ uint8_t parser(char* text, uint16_t* returnValue) {
                         return 1;
                         }
                         val1 -= val2;
+                        break;
+
+                    case PARSERSTATE__INDEX:
+                        //NYI
+                        break;
+
+                    case PARSERSTATE__EXPECTING_OPERATOR:
+                        //NYI
+                        break;
+
+                    default:
+                        //NYI
                         break;
                 }
                 state = PARSERSTATE__EXPECTING_OPERATOR;
@@ -192,25 +237,39 @@ uint8_t parser(char* text, uint16_t* returnValue) {
 
 
 uint8_t parser__get_value_of_token(char* text, uint16_t* returnValue) {
-    if(strlen(text) > 2 && text[0] == '0' && text[1] == 'x') {//Hex
+
+    //TODO check sccanf results and make sure we report success/fail accurately
+
+    //Hexadecimal
+    if(strlen(text) > 2 && text[0] == '0' && text[1] == 'x') {
         if(sscanf(text,"%x",(unsigned int*)returnValue) != 1)
             return 1;
-    } else if(isdigit(text[0])) {//Decimal
+
+    //Decimal
+    } else if(isdigit(text[0])) {
         if(sscanf(text, "%d", (int*)returnValue) != 1)
             return 1;
-    } else if(library__get_variable_address(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);//Variable
-    
-    else if(library__get_label_address(text, returnValue) != LIBRARY_STATUS__NAME_NOT_FOUND);//Label
+    }
 
-    else
-        return 1;
-    return 0;
+    //Token / pound define
+    //else if(library_doesEntryExist(text)) {
+    //    *returnValue = library_getEntryValue(text);
+    //    return 0;
+    //}
+    //TODO handle variables and labels gracefully
+
+    return 1;
 }
 
 
-uint8_t parser_internal__is_end_of_token(char c) {
-   return (c == ' ') || (c == '[') || (c == ']') || (c == '*') || (c == '+') || (c == '-') || (c == '\0') || (c=='(') || (c==')');
+bool bIsTokenDelineator(char c) {
+   return (c == ' ') ||
+          (c == '[') ||
+          (c == ']') ||
+          (c == '*') ||
+          (c == '+') ||
+          (c == '-') ||
+          (c == '\0')||
+          (c == '(') ||
+          (c == ')');
 }
-
-
-

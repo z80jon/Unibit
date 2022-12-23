@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
-#include "fileHandler.h"
+#include "fileIO.h"
 #include "datastructures.h"
 #include "tokenizer.h"
 #include "preprocessor.h"
@@ -13,9 +13,7 @@
 
 
 
-static struct program_token* head; ///Pointer to head node of linked list of program tokens (see datastructures.h for more info)
-
-
+extern struct programToken_t* head; ///Pointer to head node of linked list of program tokens (see datastructures.h for more info)
 
 
 /**
@@ -25,7 +23,7 @@ static struct program_token* head; ///Pointer to head node of linked list of pro
  * @param inputFile  Path to the input file of code to be assembled.
  * @param outputFile Path to output the binary ROM data to.
  */
-void assembler__run(char* inputFile, char* outputFile);
+void assembler_run(char* inputFile, char* outputFile);
 
 
 /**
@@ -34,7 +32,7 @@ void assembler__run(char* inputFile, char* outputFile);
  * @param head the starting token of the chain
  * @return uint8_t 0 if successful, else 1
  */
-uint8_t assembler__generate_hex(struct program_token* head);
+uint8_t assembler_generateHex(struct programToken_t* head);
 
 
 

@@ -1,0 +1,7 @@
+1. Create tokens of all text
+
+2. Run preprocessor, removing or adding tokens (recursion of 1 and 2) based on file includes.
+   Insert variables and labels into a library.
+
+3. Run assembler. Parse instructions into instruction tokens which link back to each program
+   token. Resolve labels.

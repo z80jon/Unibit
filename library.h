@@ -21,14 +21,13 @@
 #define LIBRARY_STATUS__TOKEN_IS_LABEL   9 
 #define LIBRARY_STATUS__TOKEN_IS_VAR     10
 #define LIBRARY_STATUS__DANGLING_LABEL   11 ///This error will occur if a label is declared at the end of a program with no instructions following it.
-
-
+#define LIBRARY_STATUS__TOKEN_NOT_A_VAR  12 ///Returned if a non-variable is being checked for bit size
 
 
 #define DEBUG_LIBRARY 1
 
-static struct library_token* libraryTokens = NULL; ///Pointer to array of Library tokens
-static uint16_t numLibraryTokens = 0;           ///Holds the current number of library tokens
+extern struct libraryToken_t** libraryTokens; ///Pointer to array of Library tokens
+extern uint16_t numLibraryTokens;           ///Holds the current number of library tokens
 
 static const uint8_t VALID_NON_ALPHANUM_CHARS_LEN = 1;
 static const char VALID_NON_ALPHANUM_CHARS[] = {'_'};
@@ -46,7 +45,7 @@ static const char VALID_NON_ALPHANUM_CHARS[] = {'_'};
  * 
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
-uint8_t library__add_variable(char* name, uint16_t numBits);
+uint8_t library_addVariable(char* name, uint16_t numBits);
 
 
 /**
@@ -57,7 +56,7 @@ uint8_t library__add_variable(char* name, uint16_t numBits);
  * @param address the starting address for the variable (address increases with numBits)
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX, LIBRARY_STATUS__ADDR_CONFLICT
  */
-uint8_t library__add_variable_with_address(char* name, uint16_t numBits, uint16_t address);
+uint8_t library_addVariableWithAddress(char* name, uint16_t numBits, uint16_t address);
 
 
 /**
@@ -67,7 +66,7 @@ uint8_t library__add_variable_with_address(char* name, uint16_t numBits, uint16_
  * @param address a pointer which will be populated with the address
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_NOT_FOUND, LIBRARY_STATUS__ADDR_UNASSIGNED
  */
-uint8_t library__get_variable_address(char* name, uint16_t* address);
+uint8_t library_getVariableAddress(char* name, uint16_t* address);
 
 
 /**
@@ -75,7 +74,7 @@ uint8_t library__get_variable_address(char* name, uint16_t* address);
  * 
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__MEMORY_TRAFFIC
  */
-uint8_t library__assign_variable_addresses();
+uint8_t library_assignVariableAddresses();
 
 
 
@@ -88,7 +87,7 @@ uint8_t library__assign_variable_addresses();
  * @param name the name of the label
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
-uint8_t library__add_label(char* name);
+uint8_t library_addLabel(struct programToken_t* token);
 
 
 /**
@@ -98,7 +97,7 @@ uint8_t library__add_label(char* name);
  * @param rom_address the exact ROM address that the label points to
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_EXISTS, LIBRARY_STATUS__SYNTAX
  */
-uint8_t library__add_label_with_address(char* name, uint16_t rom_address);
+uint8_t library_addLabelWithAddress(char* name, uint16_t rom_address);
 
 
 /**
@@ -108,7 +107,7 @@ uint8_t library__add_label_with_address(char* name, uint16_t rom_address);
  * @param rom_address the address to set the label to point to
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__NAME_NOT_FOUND, 
  */
-uint8_t library__set_label_address(char* name, uint16_t rom_address);
+uint8_t library_setLabelAddress(char* name, uint16_t rom_address);
 
 
 /**
@@ -118,7 +117,7 @@ uint8_t library__set_label_address(char* name, uint16_t rom_address);
  * @param rom_address 
  * @return uint8_t 
  */
-uint8_t library__get_label_address(char* name, uint16_t* rom_address);
+uint8_t library_getLabelAddress(char* name, uint16_t* rom_address);
 
 
 /**
@@ -127,7 +126,7 @@ uint8_t library__get_label_address(char* name, uint16_t* rom_address);
  * @param head the head node of the program
  * @return LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__UNKNOWN_ERROR LIBRARY_STATUS__DANGLING_LABEL
  */
-uint8_t library__resolve_label_addresses(struct program_token* head);
+uint8_t library_ResolveLabelAddresses(struct programToken_t* head);
 
 
 
@@ -138,10 +137,9 @@ uint8_t library__resolve_label_addresses(struct program_token* head);
  * @brief called at the end of assembly--frees up any allocated memory.
  * 
  */
-void library__free_memory();
+void library_freeMemory();
 
 
-enum libraryTokenType library__get_token_type(char* name);
 
 
 
@@ -152,9 +150,9 @@ enum libraryTokenType library__get_token_type(char* name);
  * @brief Attempts to locate and return the library token with the specified name
  * 
  * @param name the name of the token to retrieve
- * @return struct library_token the token requested, else 0.
+ * @return struct libraryToken_t the token requested, else null pointer.
  */
-struct library_token* library_internal__get_token(char* name);
+struct libraryToken_t* getToken(char* name);
 
 /**
  * @brief Checks the syntax of the name against existing naming conventions.
@@ -162,7 +160,7 @@ struct library_token* library_internal__get_token(char* name);
  * @param name the name to check the syntax of
  * @return uint8_t LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__SYNTAX
  */
-uint8_t library_internal__check_syntax_of_name(char* name);
+uint8_t checkSyntaxOfName(char* name);
 
 /**
  * @brief Handles reallocating memory and adding a new token to the array. When complete, the new blank token is at the
@@ -171,7 +169,7 @@ uint8_t library_internal__check_syntax_of_name(char* name);
  * @param name the name the token will refer to (be it a label, variable, etc)
  * @returns LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__SYNTAX_ERROR, LIBRARY_STATUS__NAME_EXISTS
  */
-uint8_t library_internal__add_generic_token(char* name);
+uint8_t addGenericToken(char* name);
 
 /**
  * @brief Checks for RAM address conflicts with the specified starting address and number of bits following it to see if
@@ -181,7 +179,7 @@ uint8_t library_internal__add_generic_token(char* name);
  * @param address the address of the first bit in the series of numBits bits.
  * @return LIBRARY_STATUS__NO_ERRORS, LIBRARY_STATUS__ADDR_CONFLICT
  */
-uint8_t library_internal__check_for_RAM_address_conflicts(uint16_t numBits, uint16_t address);
+uint8_t checkAddressConflict(uint16_t numBits, uint16_t address);
 
 
 

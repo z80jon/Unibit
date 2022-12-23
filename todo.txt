@@ -1,0 +1,1 @@
+-test makeInstructionToken and makeLabelToken

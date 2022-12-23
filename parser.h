@@ -11,8 +11,6 @@
 
 #define DEBUG_PARSER 0
 
-enum parser_state{PARSERSTATE__INITIAL_NUMBER, PARSERSTATE__ADD, PARSERSTATE__SUBTRACT, PARSERSTATE__MULTIPLY, PARSERSTATE__INDEX, PARSERSTATE__EXPECTING_OPERATOR};
-
 
 /**
  * @brief Parses the mathematical value of the text passed to it. Currently only supports converting a hex or dec number
@@ -38,16 +36,15 @@ uint8_t parser__get_value_of_token(char* text, uint16_t* returnValue);
 
 
 /**
- * @brief The parser handles small bits of text, called (poor choice, given it's used elsewhere) tokens. These are just
- *        each char* of a math problem. For instance, "1+12" would be broken up into "1" "+" "12", which are then
- *        interpreted by the parser.
+ * \brief Evaluates if the equation in the text should be a logical true or false condition, but with
+ *        no variables permitted--any reference to a variable will throw an error.
  * 
- *        This function is a glorified macro that just identifies end-of-token symbols.
- * 
- * @param c the char to check for the presence of an end-of-token symbol
- * @return uint8_t 1 if end of token, else 0
+ * \param text the text to evaluate for true or false conditional status
+ * \return true returned if the text parses to any value other than zero
+ * \return false returned if the text parses to be equal to zero
  */
-uint8_t parser_internal__is_end_of_token(char c);
+bool parser__evaluateTrueOrFalse_noVariables(char* text);
+
 
 
 #endif

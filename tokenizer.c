@@ -1,77 +1,142 @@
+#include "fileIO.h"
 #include "tokenizer.h"
+#include "datastructures.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+//====================== Local Variables ======================//
+
+const char* OPCODE_LIST_NEGATIVE[] = {"n", "negate", "invert"};
+const char* OPCODE_LIST_LOAD[] = {"l", "ld", "load"};
+const char* OPCODE_LIST_STORE[] = {"s", "st", "store"};
+const char* OPCODE_LIST_JUMPIFZERO[] = {"j", "jiz", "jumpifzero"};
+
+//====================== Local Functions ======================//
+
+/**
+ * \brief Given an input string, detect the type of token present and return it
+ * 
+ * \param c input string
+ * \return eTokenType the type of token detected in the string
+ */
+enum eProgTokenType getTokenType(char* c); 
 
 
+/**
+ * @brief Given a string with a preprocessor directive in it, create a new token containing the directive and return it.
+ * 
+ * @param string the string with the preprocessor directive
+ * @return struct programToken_t* a pointer to a new calloc'd programToken_t configured as a preprocessor token
+ */
+struct programToken_t* makePreprocessorToken(char* string, char* originalText);
+
+
+/**
+ * @brief Given a string with a label in it, create a new token containing the label and return it.
+ * 
+ * @param string the string with a label at the start of it
+ * @return struct programToken_t* a pointer to a new calloc'd programToken_t configured as a label token
+ */
+struct programToken_t* makeLabelToken(char* string, char* originalText);
+
+
+
+
+/**
+ * \brief Given a string with an opcode in it, create a new token containing the opcode and return it.
+ * 
+ * \param inputText the string with an opcode at the start of it
+ * \param originalText The original text (uncleaned of comments and such)
+ * \return struct programToken_t*  a pointer to a new calloc'd programToken_t configured as an opcode token
+ */
+struct programToken_t* makeInstructionToken(char* inputText, char* originalText);
+
+
+/**
+ * @brief Given a string with a variable declaration inb it, create a new token containing the variable info and return it.
+ * 
+ * @param string the string with the variable declaration at the start of it
+ * @return struct programToken_t* a pointer to a new calloc'd programToken_t configured as a variable declaration token.
+ */
+struct programToken_t* makeVariableToken(char* string);
+
+
+/**
+ * @brief Creates a generic token containing instruction_text and returns it. Handles malloc'ing and assigning default values automatically.
+ * 
+ * @param instruction_text the text to store in token->instruction_text
+ * @param tokenType the programTokenType enum to store within the token
+ * @param originalText The original text (uncleaned of comments and such)
+ * @return struct programToken_t* the newly created token
+ */
+struct programToken_t* makeGenericToken(enum eProgTokenType type, char* originalText);
+
+enum opCode identifyOpcode(char* text);
 
 
 //====================== Main Method ======================//
 
-struct program_token* tokenizer__tokenize(char* inputFile) {
-
+struct programToken_t* tokenizer_tokenize(char* inputFile) {
     uint32_t numLines;
     char** linesOfText;
-    fileHandler__read_in_file(inputFile,&linesOfText, &numLines);
+    fileIO_readInFile(inputFile, &linesOfText, &numLines);
 
-    struct program_token* head = (struct program_token*)calloc(1,sizeof(struct program_token));
-    struct program_token* pointer;
-    struct program_token* next;
+    struct programToken_t* head = NULL;
+    struct programToken_t* pointer = NULL;
+    struct programToken_t* next = NULL;
     uint16_t currentLine = 0;
-    uint16_t romAddress = 0;
-    head->nextToken = NULL;
-    head->instruction_text = NULL;
-    head->tokenType = PROGTOK__HEAD;
-    pointer = head;
+    printf("File read");
 
     //Step 1: create linked list of tokens of each part of the program (instructions, labels, constants, etc.)
     while(currentLine < numLines) {
-        char* sterilizedLineText = fileHandler__sterilize_text(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
-    //TODO record line number
-        uint8_t lineHadLabel = 0;
+        char* sterilizedLineText = fileIO_sterilizeText(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
         if(sterilizedLineText != NULL) {
 
+            switch(getTokenType(sterilizedLineText)) {
+//            case ePROGTOKEN_PREPROCESSOR_DIRECTIVE:
+//                next = makePreprocessorToken(sterilizedLineText);
+//                break;
 
-            if(tokenizer__has_label(sterilizedLineText)) {
-                //printf("\nLine %d: \"%s\" --> Label",currentLine+1,sterilizedLineText);
-                next = tokenizer__make_label_token(sterilizedLineText);
-                for(uint8_t i = 0; i < strlen(sterilizedLineText); i++) {
-                    if(sterilizedLineText[i] == ' ') {
-                        sterilizedLineText = &sterilizedLineText[i+1];
-                        break;
-                    }
-                }
+//            case ePROGTOKEN_LABEL:
+//                next = makeLabelToken(sterilizedLineText);
+//                break;
 
-                pointer->nextToken = next;
-                next->prevToken = pointer;
-                next->lineNumber = currentLine;
-                pointer = next;
-                lineHadLabel = 1; //Workaround so no error message prints if there's a label on a line by itself.
-            }
-            
-            if(tokenizer__has_preprocessor_directive(sterilizedLineText)) {
-                //printf("\nLine %d: \"%s\" --> Preprocessor Directive",currentLine+1,sterilizedLineText);
-                next = tokenizer__make_preprocessor_token(sterilizedLineText);
-
-            } else if(tokenizer__has_opcode(sterilizedLineText)) {
-                //printf("\nLine %d: \"%s\" --> OpCode",currentLine+1,sterilizedLineText);
-                next = tokenizer__make_opcode_token(sterilizedLineText);
-                next->romAddress = romAddress++;//we only assign ROM addresses to opcodes
+            case ePROGTOKEN_INSTRUCTION:
+                next = makeInstructionToken(sterilizedLineText, linesOfText[currentLine]);
                 
-            } else if(tokenizer__has_variable(sterilizedLineText)) {
-                //printf("\nLine %d: \"%s\" --> Variable",currentLine+1,sterilizedLineText);
-                next = tokenizer__make_variable_declaration_token(sterilizedLineText);
-                
-            } else if(!lineHadLabel){
-                //printf("\n[Tokenizer]: [ERROR]: Unable to determine what type of token '%s' is!",sterilizedLineText);
-                //return NULL;
+                break;
+
+//            case eTOKENTYPE_VARIABLE:
+//                next = makeVariableToken(sterilizedLineText);
+//                break;
+
+//            case eTOKENTYPE_UNKOWN:
+//            default:
+//                printf("Unknown token \"%s\" on line %d!",linesOfText[currentLine], currentLine);
+//                //TODO bail out and free everything
+//                break;
+
+            default:
+                break;
             }
 
-            pointer->nextToken = next;
-            next->prevToken = pointer;
-            next->lineNumber = currentLine;
+            //Update token references & handle first token edge case
+            if(head == NULL) {
+                head = next;
+                head->prev = NULL;
+            } else {
+                next->prev = pointer;
+                pointer->next = next;
+            }
             pointer = next;
         }
 
         currentLine++;
     }
+
+    //Last token edge case
+    pointer->next = NULL;
 
     //deallocate memory for the file text we just finished processing
     for(uint16_t i = 0; i < numLines; i++) {
@@ -79,10 +144,6 @@ struct program_token* tokenizer__tokenize(char* inputFile) {
     }
     free(linesOfText);
 
-    //Due to a design flaw of the code, the 'head' is never actually used and contains garbage data. This correct that by
-    //removing it.
-    head = head->nextToken;
-    free(head->prevToken);
     return head;
 }
 
@@ -91,177 +152,195 @@ struct program_token* tokenizer__tokenize(char* inputFile) {
 
 //====================== Helper Functions ======================//
 
-struct program_token* tokenizer__make_preprocessor_token(char* string) {
-    struct program_token* toReturn = tokenizer__make_generic_token(string, PROGTOK__PREPROC_DIR);
-    
-    return toReturn;
-}
+// struct programToken_t* makePreprocessorToken(char* string) {
+//     struct programToken_t* toReturn = makeGenericToken(string, eTOKEN_PREPROC_DIR);
+//     return toReturn;
+// }
 
+struct programToken_t* makeLabelToken(char* label, char* originalText) {
 
-struct program_token* tokenizer__make_label_token(char* string) {
-    char* buff = (char*)calloc(strlen(string)+1,sizeof(char));
-    strcpy(buff, string);
+    //Make token and allocate space for the label
+    struct programToken_t* toReturn = makeGenericToken(ePROGTOKEN_LABEL, originalText);
+    toReturn->data = (void*) calloc(1, sizeof(struct label_t));
+
+    //Isolate just the label text using strtok and store it in 'buff'
+    char* buff = (char*)calloc(strlen(label)+1,sizeof(char));
+    strcpy(buff, label);
     buff = strtok(buff, ":");
 
-    struct program_token* toReturn = tokenizer__make_generic_token(buff, PROGTOK__LABEL);
+    //Make the label_t structure and populate it with just the label text
+    struct label_t* t = (struct label_t*)calloc(1, sizeof(struct label_t));
+    t->text = (char*)calloc(strlen(buff),sizeof(char));
+    strcpy(t->text, buff);
 
     free(buff);
+    //toReturn->data = (void*)t;
     return toReturn;
 }
 
 
-struct program_token* tokenizer__make_opcode_token(char* string) {
-    struct program_token* toReturn = tokenizer__make_generic_token(string, PROGTOK__INSTRUCTION);
+struct programToken_t* makeInstructionToken(char* inputText, char* originalText) {
 
-    char* buff = (char*)calloc(strlen(string)+1,sizeof(char));
-    strcpy(buff,string);
-    buff = strtok(buff, " ");
-    for(uint8_t i = 0; i < LOAD_STRINGS_LENGTH; i++)
-        if(strcmp(buff,LOAD_STRINGS[i]) == 0)
-            toReturn->opcode = LOAD;
-    for(uint8_t i = 0; i < NEGATE_STRINGS_LENGTH; i++)
-        if(strcmp(buff, NEGATE_STRINGS[i])==0)
-            toReturn->opcode = NEGATE;
-    for(uint8_t i = 0; i < STORE_STRINGS_LENGTH; i++)
-        if(strcmp(buff, STORE_STRINGS[i])==0)
-            toReturn->opcode = STORE;
-    for(uint8_t i = 0; i < JUMP_STRINGS_LENGTH; i++)
-        if(strcmp(buff, JUMP_STRINGS[i])==0)
-            toReturn->opcode = JUMPIFZERO;
-    if(toReturn->opcode == UNDEFINED) {
-        printf("\n[Tokenizer]: [Error]: Unable to understand opcode token \"%s\". This is likely a bug in the assembler!",buff);
-        return NULL;
+    //Make token and allocate space for the instruction
+    struct programToken_t* toReturn = makeGenericToken(ePROGTOKEN_INSTRUCTION, inputText);
+    toReturn->data = calloc(1, sizeof(struct instruction_t));
+    struct instruction_t* data = ((struct instruction_t*) toReturn->data);
+
+    data->opcode = identifyOpcode(inputText);
+
+    //Extract the operand text
+    data->text = fileIO_extractAndCleanOperand(inputText);
+
+    return toReturn;
+}
+
+
+// struct programToken_t* makeVariableToken(char* string) {
+//     struct programToken_t* toReturn = makeGenericToken(&(string[4]), eTOKEN_VARIABLE_DECLARATION);
+    
+//     return toReturn;
+// }
+
+
+struct programToken_t* makeGenericToken(enum eProgTokenType type, char* originalText) {
+    struct programToken_t* toReturn = (struct programToken_t*)calloc(1, sizeof(struct programToken_t));
+    toReturn->next = NULL;
+    toReturn->type = type;
+
+    //Copy over the originally input text
+    toReturn->originalText = (char*)calloc(strlen(originalText)+1,sizeof(char));
+    strcpy(toReturn->originalText, originalText);
+
+    return toReturn;
+}
+
+
+struct programToken_t* tokenizer_removeToken(struct programToken_t* token) {
+    
+    //Interpret and de-allocate memory based on the type of token
+    switch(token->type) {
+        case ePROGTOKEN_INSTRUCTION:
+            free(((struct instruction_t*)token->data)->text);
+            break;
+
+        case ePROGTOKEN_LABEL:
+            free(((struct label_t*)token->data)->text);
+            break;
+
+        default:
+            //NYI
+            break;
+    }
+
+    //Update previous token if there is one
+    if(token->prev != NULL) {
+        token->prev->next = token->next;
+    }
+
+    if(token->next != NULL) {
+        token->next->prev = token->prev;
     }
     
-    //printf("\nBuff is currently: \"%s\"",buff);
-    buff = strtok(NULL, " ");
-    if(buff == NULL) {
-        toReturn->instruction_text = NULL;
-        return toReturn;
-    }
-    //printf(", and is now: \"%s\"",buff);
-    free(toReturn->instruction_text);
-    toReturn->instruction_text = (char*)calloc(strlen(buff)+1, sizeof(char));
-    strcpy(toReturn->instruction_text, buff);
-
-    return toReturn;
-}
-
-
-struct program_token* tokenizer__make_variable_declaration_token(char* string) {
-    struct program_token* toReturn = tokenizer__make_generic_token(&(string[4]), PROGTOK__VARIABLE_DEC);
-    
-    return toReturn;
-}
-
-
-struct program_token* tokenizer__make_generic_token(char* instruction_text, enum programTokenType tokenType) {
-    struct program_token* toReturn = (struct program_token*)calloc(1, sizeof(struct program_token));
-    toReturn->prevToken = NULL;
-    toReturn->nextToken = NULL;
-    toReturn->romData = 0;
-    toReturn->instruction_text = (char*)calloc(strlen(instruction_text)+1, sizeof(char));
-    toReturn->tokenType = tokenType;
-    strcpy(toReturn->instruction_text, instruction_text); 
-
-    return toReturn;
-}
-
-
-struct program_token* tokenizer__remove_token_from_chain(struct program_token* token) {
-    if(token->instruction_text != NULL)
-        free(token->instruction_text);
-    
-    if(token->prevToken != NULL)
-        token->prevToken->nextToken = token->nextToken;
-    if(token->nextToken != NULL)
-        token->nextToken->prevToken = token->prevToken;
-
-    struct program_token* toReturn = token->nextToken;
+    struct programToken_t* toReturn = token->next;
     free(token);
     return toReturn;
 }
 
 
 
-
 //====================== String-Utility Functions ======================//
 
-uint8_t tokenizer__has_label(char* c) {
+enum eProgTokenType getTokenType(char* c) {
+
     uint8_t index = 0;
+
+    //Test for label
     while(c[index] != '\0' && c[index] != ' ' && c[index] != '\r' && c[index] != '\n' && index < strlen(c)) {
         if(c[index++] == ':')
-            return 1;
+            return ePROGTOKEN_LABEL;
     }
-    return 0;
+
+    //Test for variable
+    //if(strstr(c, "var") == c)
+    //    return eTOKENTYPE_VARIABLE;
+    
+    //No known token detected
+    //return eTOKENTYPE_UNKOWN;
+
+    if(identifyOpcode(c) != eINVALID) {
+        return ePROGTOKEN_INSTRUCTION;
+    }
+    
+    printf("ERROR: Cannot discern how to handle text '%s'", c);
+    return 1;
 }
 
+enum opCode identifyOpcode(char* text) {
+    enum opCode opcode = eINVALID;
 
-uint8_t tokenizer__has_preprocessor_directive(char* c) {
-    return c[0] == '.';
-}
-
-
-uint8_t tokenizer__has_opcode(char* c) {
-    char* buff = calloc(strlen(c)+1, sizeof(char));
-    strcpy(buff, c);
-    buff = strtok(buff, " ");//Grab first word of string
-    for(uint8_t i = 0; i < OPCODE_STRINGS_LENGTH; i++) {
-        if(strcmp(buff, OPCODE_STRINGS[i]) == 0) {
-            free(buff);
-            return 1;
+    for(int i = 0; i < 3; i++) {
+        if(fileIO_containsIgnoreCase(text,OPCODE_LIST_LOAD[i])) {
+            opcode = eLOAD;
+        } else if(fileIO_containsIgnoreCase(text,OPCODE_LIST_NEGATIVE[i])) {
+            opcode = eNEGATE;
+        } else if(fileIO_containsIgnoreCase(text,OPCODE_LIST_JUMPIFZERO[i])) {
+            opcode = eJUMPIFZERO;
+        } else if(fileIO_containsIgnoreCase(text,OPCODE_LIST_STORE[i])) {
+            opcode = eSTORE;
         }
     }
-    free(buff);
-    return 0;
+
+    return opcode;
 }
 
 
-uint8_t tokenizer__has_variable(char* c) {
-    return strstr(c, "var") == c;
-}
+void tokenizer_printOutToken(struct programToken_t* t) {
+    struct instruction_t* data;
 
-
-void tokenizer__print_out_token(struct program_token* t) {
     if(t == NULL)
         return;
 
-    switch(t->tokenType) {
+    switch(t->type) {
 
-        case PROGTOK__INSTRUCTION:
-            printf("[INSTRUCTION token: line#: %d, address in ROM: %d/%4X, ",t->lineNumber+1,t->romAddress,t->romAddress);
-            
-            switch(t->opcode) {
-                case LOAD:
-                    printf("LOAD from %d/0x%X, ",t->romData & 0x3FFF, t->romData & 0x3FFF);
+        case ePROGTOKEN_INSTRUCTION:
+            printf("[INSTRUCTION token: ");
+            data = (struct instruction_t*) t->data;
+
+            switch(data->opcode) {
+                case eLOAD:
+                    printf("LOAD from %d/0x%X, ",data->operand & 0x3FFF, data->operand & 0x3FFF);
                     break;
-                case NEGATE:
-                    printf("NEGATE (with dangling address %d/0x%X), ",t->romData & 0x3FFF, t->romData & 0x3FFF);
+                case eNEGATE:
+                    printf("NEGATE (with dangling address %d/0x%X), ",data->operand & 0x3FFF, data->operand & 0x3FFF);
                     break;
-                case STORE:
-                    printf("STORE to %d/0x%X, ",t->romData & 0x3FFF, t->romData & 0x3FFF);
+                case eSTORE:
+                    printf("STORE to %d/0x%X, ",data->operand & 0x3FFF, data->operand & 0x3FFF);
                     break;
-                case JUMPIFZERO:
-                    printf("JUMP to %d/0x%X, ",t->romData & 0x3FFF , t->romData & 0x3FFF);
+                case eJUMPIFZERO:
+                    printf("JUMP to %d/0x%X, ",data->operand & 0x3FFF , data->operand & 0x3FFF);
                     break;
-            }
-            printf("text: '%s']\n",t->instruction_text);
+                case eINVALID:
+                default:
+                    printf("Invalid opcode. This should never happen regardless of input text!");
+                    break;
+                }
+            printf("(operand text:\"%s\")]",data->text);
             break;
 
-        case PROGTOK__LABEL:
-            printf("[LABEL token: line#: %d, address pointed to in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->romAddress,t->romAddress,t->instruction_text);
+        case ePROGTOKEN_LABEL:
+            //printf("[LABEL token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
             break;
         
-        case PROGTOK__PREPROC_DIR:
-            printf("[PREPROCESSOR DIRECTIVE token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
-            break;
+        // case eTOKEN_PREPROC_DIR:
+        //     printf("[PREPROCESSOR DIRECTIVE token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
+        //     break;
 
-        case PROGTOK__VARIABLE_DEC:
-             printf("[VARIABLE DECLARATION token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
-            break;
+        // case eTOKEN_VARIABLE_DECLARATION:
+        //      printf("[VARIABLE DECLARATION token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
+        //      break;
         
         default:
-            printf("[UNKNOWN token: line#: %d, address in ROM: %d/%4X, text: '%s']\n",t->lineNumber+1,t->romData,t->romData,t->instruction_text);
+            //printf("[UNKNOWN token: line#: %d, text: '%s']\n",t->lineNumber+1,t->instruction_text);
             break;
     }
     
