@@ -1,11 +1,16 @@
 #include "assembler.h"
 #include "tokenizer.h"
+#include "parser.h"
 #include "library.h"
 
 
 struct programToken_t* head = NULL;
 
-
+/**
+ * \brief Step through each of the program tokens (starting from the head) and resolve
+ *        each instruction's operand from text to a raw binary value
+ */
+void resolveOperands(void);
 
 void assembler_run(char* inputFile, char* outputFile) {
 
@@ -25,6 +30,10 @@ void assembler_run(char* inputFile, char* outputFile) {
 
     //library_assignVariableAddresses();
     //library_ResolveLabelAddresses(head);
+
+    /* Go through each instruction and translate its operand into raw binary data */
+    resolveOperands();
+                        
 
     //Step make the output file
     if(assembler_generateHex(head) != 0) {
@@ -91,5 +100,19 @@ uint8_t assembler_generateHex(struct programToken_t* head) {
     return 0;
 }
 
+void resolveOperands(void) {
+    struct programToken_t* token = head;
 
+    while(token != NULL) {
 
+        if(token->type == ePROGTOKEN_INSTRUCTION) {
+            struct instruction_t* data = ((struct instruction_t*) token->data);
+            if(parser(data->text,&(data->operand))) {
+                printf("\n[ERROR]: Could not make sense of operand text \"%s\"",data->text);
+                printf(" in source text \"%s\"",token->originalText);
+            }
+        }
+
+        token = token->next;
+    }
+}

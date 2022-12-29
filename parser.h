@@ -9,7 +9,7 @@
 #include <ctype.h>
 #include "library.h"
 
-#define DEBUG_PARSER 0
+#define DEBUG_PARSER 1
 
 
 /**

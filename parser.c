@@ -1,9 +1,10 @@
 #include "parser.h"
+#include <inttypes.h>
 
 
 //===== Local Variables and Functions =====//
 
-enum parser_state{
+enum parser_state {
     PARSERSTATE__INITIAL_VALUE = 0, //< Parser is in its initial state and expecting a new value
     PARSERSTATE__ADD,               //< Parser will subtract next value decoded
     PARSERSTATE__SUBTRACT,          //< Parser will subtract next value decoded
@@ -21,34 +22,75 @@ enum parser_state{
  * @param c the char to check for the presence of an end-of-token symbol
  * @return true if c is an end-of-token symbol, else false
  */
-bool bIsTokenDelineator(char c);
+bool bIsTokenDelimiter(char c);
+
+
+bool bIsMathTokenDelimiter(char c);
+
+
+bool bIsWhitespaceDelimiter(char c);
+
+
+const char* MATH_DELIMITERS = "+-/*()[]";
+const char* WHITESPACE_DELIMITERS = "\t\r\n\v\f ";
+
+
+
+/**
+ * \brief given input text to the parser, separate each number, variable, and operator
+ *        into its own element in an array of strings. eg: "1+foo" --> {"1", "+", "foo"}
+ * 
+ * \param text input text to the parser
+ * \return char** a newly allocated and populated array of strings, each containing one
+ *                element of the data to be parsed
+ */
+char** createArrayofTokens(char* text);
+
+/**
+ * \brief given a string of text to be input to the parser, count how many discrete elements
+ *        that require parsing there are. Examples:
+ * 
+ *        foo[2] --> 4 (foo, [, 2, ]);  1+(7*3) --> 7 (1,+,(,7,*,3,))
+ * 
+ * \param text input text
+ * \return int number of discrete parseable elements
+ */
+int getNumberOfTokens(char* text);
 
 
 uint8_t parser(char* text, uint16_t* returnValue) {
-    if(DEBUG_PARSER)printf("\n[Parser]: Started parsing \"%s\".",text);
-    if(text == NULL || text[0] == '\0') {
-        //printf("Null terminator detected");
-        *returnValue = 0;
-        return 0; //TODO verify that this is actually needed in the first place
-    }
     char* token = (char*)calloc(strlen(text)+1,sizeof(char));
-    uint16_t val1 = 0, val2 = 0, scratchpad;
-    enum parser_state state = PARSERSTATE__INITIAL_VALUE;
-    uint8_t textIndex = 0, tokenIndex = 0;
+    int val1 = 0, val2 = 0; //Used to store intermediate values to calculate the final value
+    int scratchpad;         //Used for temp variables
+    int textIndex = 0;      //Index within the text string that the parser is currently parsing
+    int tokenIndex = 0;
+    
+    if(DEBUG_PARSER)printf("\n[Parser]: Started parsing \"%s\".",text);
+
+    //Edge case: Empty input text. Resolve this to zero.
+    if(text == NULL || text[0] == '\0') {
+        *returnValue = 0;
+        return 0;
+    }
+
+    //1) separate the text into an array of tokens
+    //   (eg, input "1+foo" --> {"1", "+", "foo"})
+    char** tokens = createArrayofTokens(text);
+    
     while(textIndex < strlen(text)) {
 
         //1) copy over characters until a null term or math operator or space or parentheses is found
-        while(!bIsTokenDelineator(text[textIndex])) {
+        while(!bIsTokenDelimiter(text[textIndex])) {
             token[tokenIndex++] = text[textIndex++];
         }
 
-        //2) TODO write this
+        //2) If we didn't just encounter blank text, parse the value we captured
         if(tokenIndex > 0) {
             if(parser__get_value_of_token(token, &val2)) {
                 printf("\n[Parser]: [ERROR]: Unable to resolve meaning of \"%s\"",token);
                 return 1;
             }
-                
+
             switch(state) {
                 case PARSERSTATE__INITIAL_VALUE:
                     val1 = val2;
@@ -84,6 +126,7 @@ uint8_t parser(char* text, uint16_t* returnValue) {
 
         }
 
+        //Detect the text at the index
         switch(text[textIndex]) {
             case '+':
                 state = PARSERSTATE__ADD;
@@ -237,18 +280,29 @@ uint8_t parser(char* text, uint16_t* returnValue) {
 
 
 uint8_t parser__get_value_of_token(char* text, uint16_t* returnValue) {
-
+    if(DEBUG_PARSER)printf("\n[parser__get_value_of_token]: Trying to make sense of %s...",text);
     //TODO check sccanf results and make sure we report success/fail accurately
 
     //Hexadecimal
     if(strlen(text) > 2 && text[0] == '0' && text[1] == 'x') {
-        if(sscanf(text,"%x",(unsigned int*)returnValue) != 1)
+        if(DEBUG_PARSER)printf("Decoded to be hexadecimal! Value: ]");
+        if(sscanf(&(text[2]),"%x",(unsigned int*) returnValue) != 1) {
+            printf("\n[PARSER ERROR: Could not decode hex value]");
             return 1;
+        }
+            
+        if(DEBUG_PARSER)printf("Value: %x",*returnValue);
 
     //Decimal
     } else if(isdigit(text[0])) {
-        if(sscanf(text, "%d", (int*)returnValue) != 1)
+        if(DEBUG_PARSER)printf("Decoded to be integer! Value: ");
+        if(sscanf(text,"%d",(int*) returnValue) != 1) {
+            printf("\n[PARSER ERROR: Could not decode integer]");
             return 1;
+        }
+        if(DEBUG_PARSER)printf("%d",*returnValue);
+    } else {
+        if(DEBUG_PARSER)printf("Error: Unable to decode!]");
     }
 
     //Token / pound define
@@ -258,18 +312,57 @@ uint8_t parser__get_value_of_token(char* text, uint16_t* returnValue) {
     //}
     //TODO handle variables and labels gracefully
 
-    return 1;
+    return 0;
 }
 
 
-bool bIsTokenDelineator(char c) {
-   return (c == ' ') ||
-          (c == '[') ||
-          (c == ']') ||
-          (c == '*') ||
-          (c == '+') ||
-          (c == '-') ||
-          (c == '\0')||
-          (c == '(') ||
-          (c == ')');
+char** createArrayofTokens(char* text) {
+    int numTokens = getNumberOfTokens(text);
+    char** toReturn = malloc(sizeof(char*) * numTokens);
+
+    for(int i = 0; i < numTokens; i++) {
+        //Get the length of text
+        
+    }
+}
+
+int getNumberOfTokens(char* text) {
+    int i = 0;
+    if(strlen(text) == 0) {
+        return 0;
+    }
+    int numTokens = 1;
+    bool textDelim = false;
+
+    while(text[i] != '\0') {
+        if(bIsTokenDelimiter(text[i]) && textDelim == false) {
+            //If we have encountered a delimiter, it marks the end of the token and the start of another--
+            textDelim = true;
+            numTokens++;
+        } else if(bIsTokenDelimiter(text[i]) && textDelim == true) {
+            //If we have not yet reset seeing a delimitor, make sure it's a math operator and not just a
+            //repeat white space character before incrementing the counter again
+            if(bIsMathTokenDelimiter(text[i]))
+                numTokens++;
+
+        } else {
+            textDelim = false;
+        }
+        i++;
+    }
+
+    return numTokens;
+}
+
+
+bool bIsTokenDelimiter(char c) {
+   return bIsMathTokenDelimiter(c) || bIsWhitespaceDelimiter(c);
+}
+
+bool bIsMathTokenDelimiter(char c) {
+    return strchr(MATH_DELIMITERS, c) != NULL;
+}
+
+bool bIsWhitespaceDelimiter(char c) {
+    return strchr(WHITESPACE_DELIMITERS, c) != NULL;
 }
