@@ -139,7 +139,7 @@ uint8_t preprocessor_run(struct programToken_t* head) {
 
 //     } else {
 //         uint16_t numBits;
-//         if(parser(strtok_token, &numBits) != 0) {
+//         if(parser_begin(strtok_token, &numBits) != 0) {
 //             printf("\n[Preprocessor]: [FATAL ERROR]: Failed to parse meaning of \"%s\" from text \"%s\" on line %d",strtok_token, token->instruction_text, token->lineNumber);
 //             return 1;
 //         }
@@ -150,7 +150,7 @@ uint8_t preprocessor_run(struct programToken_t* head) {
 
 //         } else {//Case: var <name> <numBits> <address>
 //             uint16_t addr;
-//             if(parser(strtok_token, &addr) != 0) {
+//             if(parser_begin(strtok_token, &addr) != 0) {
 //                 printf("\n[Preprocessor]: [FATAL ERROR]: Failed to parse meaning of \"%s\" from text \"%s\" on line %d",strtok_token, token->instruction_text, token->lineNumber);
 //                 return 1;
 //             }

@@ -68,7 +68,7 @@ uint8_t assembler_generateHex(struct programToken_t* head) {
 
     while(token != NULL) {
         if(token->type == ePROGTOKEN_INSTRUCTION) {
-            //if(parser(token->instruction_text, &(token->romData)) != 0) {
+            //if(parser_begin(token->instruction_text, &(token->romData)) != 0) {
             //    printf("\n[Hex Generation]: [Error]: Unable to parse operand \"%s\" on line %d!",token->instruction_text, token->lineNumber);
             //    return 1;
             //}
@@ -107,7 +107,7 @@ void resolveOperands(void) {
 
         if(token->type == ePROGTOKEN_INSTRUCTION) {
             struct instruction_t* data = ((struct instruction_t*) token->data);
-            if(parser(data->text,&(data->operand))) {
+            if(parser_begin(data->text,&(data->operand))) {
                 printf("\n[ERROR]: Could not make sense of operand text \"%s\"",data->text);
                 printf(" in source text \"%s\"",token->originalText);
             }

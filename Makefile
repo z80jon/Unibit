@@ -1,33 +1,44 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99 -g
+#-Wfatal-errors will abort compilation on first error!
+CFLAGS = -Wall -pedantic -std=c99 -g -Wfatal-errors
 #-WError -pedantic 
 
-SRC = 
-OBJ = $(SRC:.cc=.o)
-EXEC = main
+#Source Directory
+SDIR = src
+SRC = assembler.c fileIO.c library.c parser.c preprocessor.c tokenizer.c
+ODIR = build
+OBJ = $(SRC:.c=.o)
+EXEC = main validation
 
 .DEFAULT: all
 
-main: fileIO library parser preprocessor assembler tokenizer
-	$(CC) main.c -o assembler $(CFLAGS) *.o
 
-assembler:
-	$(CC) -c assembler.c $(CFLAGS)
+#==== EXECUTABLE FILES ====#
+main: $(OBJ)
+	$(CC) $(SDIR)\main.c -o assembler $(CFLAGS) $(ODIR)/**.o
 
-fileIO:
-	$(CC) -c fileIO.c $(CFLAGS)
+validation:
+#We discard const qualifiers, so suppress that warning
+	$(CC) $(SDIR)\validation.c -o validation -Wno-discarded-qualifiers $(CFLAGS) $(ODIR)/**.o -Ilibs/munit
 
-library:
-	$(CC) -c library.c $(CFLAGS)
+#==== OBJECT FILES ====#
+assembler.o: 
+	$(CC) -c $(SDIR)\assembler.c $(CFLAGS) -o $(ODIR)/$@
 
-parser:
-	$(CC) -c parser.c $(CFLAGS)
+fileIO.o:
+	$(CC) -c $(SDIR)\fileIO.c $(CFLAGS) -o $(ODIR)/$@
 
-preprocessor:
-	$(CC) -c preprocessor.c $(CFLAGS)
+library.o:
+	$(CC) -c $(SDIR)\library.c $(CFLAGS) -o $(ODIR)/$@
 
-tokenizer:
-	$(CC) -c tokenizer.c $(CFLAGS)
+parser.o:
+	$(CC) -c $(SDIR)\parser.c $(CFLAGS) -o $(ODIR)/$@
+
+preprocessor.o:
+	$(CC) -c $(SDIR)\preprocessor.c $(CFLAGS) -o $(ODIR)/$@
+
+tokenizer.o:
+	$(CC) -c $(SDIR)\tokenizer.c $(CFLAGS) -o $(ODIR)/$@
 
 
 all: $(EXEC)
@@ -38,4 +49,4 @@ all: $(EXEC)
 ##	$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LBLIBS)
 
 clean:
-	rm -rf *.o
+	rm -rf $(ODIR)/**.o

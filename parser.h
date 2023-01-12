@@ -21,18 +21,7 @@
  * 
  * @return 0 if parsed successfully, else 1
  */
-uint8_t parser(char* text, uint16_t* returnValue);
-
-
-/**
- * @brief Obtains the discrete value of a non-operator token, deciphering it to be a label, address, hex, or dec number,
- *        and returns this value in returnValue
- * 
- * @param text the token text to be parsed
- * @param returnValue pointer to where to store the decoded value of the token text
- * @return uint8_t 1 if unable to decode token, else 0.
- */
-uint8_t parser__get_value_of_token(char* text, uint16_t* returnValue);
+uint8_t parser_begin(char* text, uint16_t* returnValue);
 
 
 /**
