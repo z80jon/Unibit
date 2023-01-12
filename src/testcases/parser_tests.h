@@ -6,28 +6,28 @@
 
 extern int getNumberOfTokens(char* text);
 
-const char** inputStrings = {
+const char** parserInputStrings = {
     "1",
     "1+",
     "1+2",
     "1 + 2",
-    "parser[foo]",
     "1+3*2",
-    "1*3*(12+2)"
+    "1*3*(12+2)",
+    "parser[foo]"
 };
 const int* getNumberOfTokensOutputs = {
     1,
     2,
     3,
     3,
-    4,
     5,
-    9
+    9,
+    4
 };
 
 
 static MunitParameterEnum test_params[] = {
-  { (char*) "inputs", inputStrings },
+  { (char*) "inputs", parserInputStrings },
   { (char*) "getNumberOfTokensOutput", getNumberOfTokensOutputs },
   { NULL, NULL },
 };

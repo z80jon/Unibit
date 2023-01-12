@@ -1,5 +1,6 @@
 #include "parser.h"
 #include <inttypes.h>
+#include <limits.h>
 #include <math.h>
 
 //===== Local Variables and Functions =====//
@@ -53,7 +54,7 @@ enum eOrderOfOperations getPriorityofOperator(char c);
  * @param returnValue pointer to where to store the decoded value of the token text
  * @return int 1 if unable to decode token, else 0.
  */
-int get_value_of_token(char* text, uint16_t* returnValue);
+int getValueOfToken(char* text, int32_t* returnValue);
 
 /**
  * \brief Given an array of tokens to parse, returns the value
@@ -83,7 +84,7 @@ int get_value_of_token(char* text, uint16_t* returnValue);
  * \param returnValue 16-bit value that will be populated with the final value of char** tokens
  * \return int 0 if successful, else 1
  */
-int parse(char** tokens, int startIndex, uint16_t* returnValue);
+int parse(char** tokens, int startIndex, int32_t* returnValue);
 
 
 /**
@@ -116,7 +117,7 @@ int getNumberOfTokens(char* text);
 
 
 uint8_t parser_begin(char* text, uint16_t* returnValue) {
-    
+    int32_t tempVal; //Temporary, larger buffer for return value
     if(DEBUG_PARSER)printf("\n[Parser]: Started parsing \"%s\".",text);
     //Edge case: empty input string
     if(strlen(text) == 0) {
@@ -135,7 +136,7 @@ uint8_t parser_begin(char* text, uint16_t* returnValue) {
 
 
     //STEP 2: Use internal parse function to recursively parse the data
-    if(parse(tokens, 0, returnValue) != 0) {
+    if(parse(tokens, 0, &tempVal) != 0) {
         *returnValue = 0;
         printf("\n[Parser]: Unable to parse input text!");
         for(int i = 0; i < numTokens; i++)
@@ -148,16 +149,22 @@ uint8_t parser_begin(char* text, uint16_t* returnValue) {
     free(tokens[0]);
     free(tokens);
 
-    if(DEBUG_PARSER)printf("\n[Parser]: Translated \"%s\" to: %d/0x%X.",text, *returnValue, *returnValue);
-
+    if(tempVal > UINT16_MAX || tempVal < 0) {
+        printf("\n[Parser]: Input text \"%s\" Did not fit into uint16! Equated to %d!",text,tempVal);
+        *returnValue = 0;
+        return 1;
+    }
+    
+    *returnValue = (uint16_t) tempVal;
+    //if(DEBUG_PARSER)printf("\n[Parser]: Translated \"%s\" to: %d/0x%X.",text, *returnValue, *returnValue);
     return 0;
 }
 
 
-int parse(char** tokens, int startIndex, uint16_t* returnValue) {
+int parse(char** tokens, int startIndex, int32_t* returnValue) {
     int i = startIndex + 1;
     int hpi = i; //index of first highest priority math operator
-    uint16_t scratchPad1, scratchPad2; //for return value usage
+    int32_t scratchPad1, scratchPad2; //for return value usage
     if(DEBUG_PARSER)printf("\n[parse]: Started parsing at index %d (token text: \"%s\")",startIndex,tokens[startIndex]);
 
     //STEP 1: BASE CASE: just extract the value of the token IFF...
@@ -166,7 +173,7 @@ int parse(char** tokens, int startIndex, uint16_t* returnValue) {
     //                      this series of recursive calls is to calculate everything
     //                      inbetween [ ] or ( ).
     if(startIndex == (numTokens-1) || tokens[startIndex+1][0] == ']' || tokens[startIndex+1][0] == ')') {
-        if(get_value_of_token(tokens[startIndex],returnValue) != 0) {
+        if(getValueOfToken(tokens[startIndex],returnValue) != 0) {
             //ERROR STATE
             printf("\n[PARSER]: Could not interpret value of token \"%s\"!",tokens[startIndex]);
             return 1;
@@ -219,6 +226,10 @@ int parse(char** tokens, int startIndex, uint16_t* returnValue) {
 
                 }
 
+                //Copy over the result
+                free(tokens[i][0]);
+                tokens[i] = tokens[i+1];
+
             //Check to see if it's higher priority than our existing operator
             } else if(getPriorityofOperator(tokens[i][0]) > getPriorityofOperator(tokens[hpi][0])) {
                 hpi = i;
@@ -234,8 +245,8 @@ int parse(char** tokens, int startIndex, uint16_t* returnValue) {
     }
 
     //STEP 3: Act on the highest priority math operator
-    get_value_of_token(tokens[hpi-1],&scratchPad1);
-    get_value_of_token(tokens[hpi+1],&scratchPad2);
+    getValueOfToken(tokens[hpi-1],&scratchPad1);
+    getValueOfToken(tokens[hpi+1],&scratchPad2);
     switch(tokens[hpi][0]) {
         case '^':
             scratchPad1 = pow(scratchPad1, scratchPad2);
@@ -266,13 +277,16 @@ int parse(char** tokens, int startIndex, uint16_t* returnValue) {
             break;
     }
 
-    //STEP 4: Remove tokens we have operated on
-    //Reallocate & Populate the first operand token with the result of the equation
-
-    //Free up the memory allocation of the two already processed tokens (third is kept to hold
-    //the result of the math operation)
+    //STEP 4: free tokens operated on, replace first operand with result (in text)
+    //Free up unneeded strings...
+    free(tokens[hpi-1]);
     free(tokens[hpi]);
     free(tokens[hpi+1]);
+
+    //Make a new one with the result...
+    char* newToken = calloc(10, sizeof(char));
+    sprintf(newToken,"%d",scratchPad1);
+    tokens[hpi-1] = newToken;
 
     //Shift down any remaining tokens
     for(int j = hpi+1; j < numTokens; j++) {
@@ -288,8 +302,8 @@ int parse(char** tokens, int startIndex, uint16_t* returnValue) {
 }
 
 
-int get_value_of_token(char* text, uint16_t* returnValue) {
-    if(DEBUG_PARSER)printf("\n[get_value_of_token]: Trying to make sense of %s...",text);
+int getValueOfToken(char* text, int32_t* returnValue) {
+    if(DEBUG_PARSER)printf("\n[getValueOfToken]: Trying to make sense of %s...",text);
     //TODO check sccanf results and make sure we report success/fail accurately
 
     //Hexadecimal
@@ -312,6 +326,7 @@ int get_value_of_token(char* text, uint16_t* returnValue) {
         if(DEBUG_PARSER)printf("%d",*returnValue);
     } else {
         if(DEBUG_PARSER)printf("Error: Unable to decode!]");
+        return 1;
     }
 
     //Token / pound define
