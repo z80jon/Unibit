@@ -6,7 +6,7 @@
 #NYI    load foo+1
 #NYI init:
 #NYI start:  
-    	load  1 
+    	load  1 + 2 
 
 #        store 8
 #        load  1
