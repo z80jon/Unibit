@@ -1,10 +1,13 @@
 CC = gcc
-#-Wfatal-errors will abort compilation on first error!
+#C flags, test C flags
 CFLAGS = -Wall -pedantic -std=c99 -g -Wfatal-errors
+TCFLAGS = $(CFLAGS) -Wno-discarded-qualifiers -Ilibs/munit -I$(SDIR) -I$(TSDIR)
 #-WError -pedantic 
 
 #Source Directory
 SDIR = src
+#Test source directory
+TSDIR = src\testcases
 SRC = assembler.c fileIO.c library.c parser.c preprocessor.c tokenizer.c
 ODIR = build
 OBJ = $(SRC:.c=.o)
@@ -17,11 +20,15 @@ EXEC = main validation
 main: $(OBJ)
 	$(CC) $(SDIR)\main.c -o assembler $(CFLAGS) $(ODIR)/**.o
 
-validation:
+validation: parser_tests.o
 #We discard const qualifiers, so suppress that warning
-	$(CC) $(SDIR)\validation.c -o validation -Wno-discarded-qualifiers $(CFLAGS) $(ODIR)/**.o -Ilibs/munit
+	$(CC) $(SDIR)\validation.c -o validation $(TCFLAGS) $(ODIR)/**.o
 
-#==== OBJECT FILES ====#
+#==== VALIDATION TEST OBJECT FILES ====#
+parser_tests.o:
+	$(CC) -c $(TSDIR)\parser_tests.c $(TCFLAGS) -o $(ODIR)/$@
+
+#==== ASSEMBLER OBJECT FILES ====#
 assembler.o: 
 	$(CC) -c $(SDIR)\assembler.c $(CFLAGS) -o $(ODIR)/$@
 

@@ -227,7 +227,7 @@ int parse(char** tokens, int startIndex, int32_t* returnValue) {
                 }
 
                 //Copy over the result
-                free(tokens[i][0]);
+                free(tokens[i]);
                 tokens[i] = tokens[i+1];
 
             //Check to see if it's higher priority than our existing operator

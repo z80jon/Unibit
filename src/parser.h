@@ -36,4 +36,4 @@ bool parser__evaluateTrueOrFalse_noVariables(char* text);
 
 
 
-#endif
+#endif /* PARSER_H_ */
