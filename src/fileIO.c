@@ -10,6 +10,8 @@
 #include <ctype.h>
 
 
+bool bIsStartOfComment(char* text, int index);
+
 int fileIO_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
 
     //Open file
@@ -93,7 +95,7 @@ char* fileIO_sterilizeText(char* text) {
     
     bool bUsedSpace = true;//prevents copying space multiple times. Set to true so we don't copy
                            //any initial spaces.
-    while(i < strlen(text) && (text[i] != '#' && text[i] != '\r' && text[i] != '\n')) {
+    while(i < strlen(text) && (!bIsStartOfComment(text,i) && text[i] != '\r' && text[i] != '\n')) {
 
         //Space handling
         if(!bUsedSpace && (text[i] == ' ' || text[i] == '\t')) {
@@ -231,4 +233,17 @@ bool fileIO_containsIgnoreCase(char const *str1, char const *str2)
     }
 
     return true;
+}
+
+
+/**
+ * \brief Returns true if the char at text[index] is the first '/' in a '//' comment start
+ * 
+ * \param text the string to check
+ * \param index the index within the string 'text' to check
+ * \return true if it is the beginning of a comment
+ * \return false if it is not the beginning of a comment
+ */
+bool bIsStartOfComment(char* text, int index) {
+    return (strlen(text) > (index + 1)) && text[index] == '/' && text[index+1] == '/';
 }

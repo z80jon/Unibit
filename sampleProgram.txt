@@ -1,32 +1,32 @@
+ 
+//NYI var foo 4 0x10
+//NYI var onebit 1
 
-#NYI var foo 4 0x10
-#NYI var onebit 1
-
-#Just copy [0..7] to [8..15]
-#NYI    load foo+1
-#NYI init:
-#NYI start:  
+//Just copy [0..7] to [8..15]
+//    load foo+1
+//NYI init:
+//NYI start:  
     	load  1 + 2 
 
-#        store 8
-#        load  1
-#        store 9
-#        load  2
-#        store 10
-#        load  3
-#        store 11
-#        load  4
-#        store 12
-#        load  5
-#        store 13
-#        load  6
-#        store 14
-#        load  7
-#        store 15
+//        store 8
+//        load  1
+//        store 9
+//        load  2
+//        store 10
+//        load  3
+//        store 11
+//        load  4
+//        store 12
+//        load  5
+//        store 13
+//        load  6
+//        store 14
+//        load  7
+//        store 15
 
 
-#NYI end:    
-#negate
-#        jump end
-#        negate
-#        jump end
+//NYI end:    
+//negate
+//        jump end
+//        negate
+//        jump end
