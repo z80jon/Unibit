@@ -9,7 +9,8 @@
 
 //===== PARSER TESTS =====//
 extern int getNumberOfTokens(char* text);
-extern int createArrayofTokens(char* text, char*** array);
+extern int createArrayofTokens(char* text);
+extern char** tokens;
 //extern int getValueOfToken(char* text, uint16_t* returnValue);
 
 #define NUM_PARSER_INPUT_STRINGS 12
@@ -102,15 +103,14 @@ static MunitResult parser_createArrayOfTokens(const MunitParameter params[], voi
     for(i = 0; i < NUM_PARSER_INPUT_STRINGS; i++)
         if(strcmp(parserInputStrings[i], input) == 0)
             break;
-    char** solnArray;
     int tokensExpected = getNumberOfTokensOutputs[i];
     MunitResult passFail = MUNIT_OK;
 
-    int tokensActual = createArrayofTokens(input, &solnArray);
+    int tokensActual = createArrayofTokens(input);
 
     for(int j=0; j<tokensExpected && j<tokensActual; j++) {
-        if(strcmp(solnArray[j], createArrayofTokensOutputs[i][j]) != 0) {
-            munit_assert_string_equal(solnArray[j],createArrayofTokensOutputs[i][j]);
+        if(strcmp(tokens[j], createArrayofTokensOutputs[i][j]) != 0) {
+            munit_assert_string_equal(tokens[j],createArrayofTokensOutputs[i][j]);
             passFail = MUNIT_FAIL;
             break;
         }
@@ -118,7 +118,7 @@ static MunitResult parser_createArrayOfTokens(const MunitParameter params[], voi
 
     //Free up memory
     for(int j = 0; j < tokensActual; j++) {
-        free(solnArray[j]);
+        free(tokens[j]);
     }
 
     return passFail;

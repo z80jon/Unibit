@@ -2,10 +2,12 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
+#include <assert.h>
 
-//===== Local Variables and Functions =====//
+//==== Local Variables and Enums ====//
 
 int numTokens, originalNumTokens;
+char** tokens;
 char* parserText; //< Is set to whatever the current input text being parsed is for error printing purposes
 
 enum parser_state {
@@ -18,103 +20,29 @@ enum parser_state {
 };
 
 enum eOrderOfOperations {
-    eOOO_additionSubtraction = 0,       //< Addition or subtraction (lowest priority)
+    eOOO_noOperator = 0,
+    eOOO_additionSubtraction,           //< Addition or subtraction (lowest priority)
     eOOO_multiplicationDivisionModulo,  //< Multiplication or division or modulo operator
     eOOO_exponent,                      //< Exponent
     eOOO_parenthesesBracket             //< Parentheses or bracket operator (highest priority)
 };
 
-/**
- * @brief Returns true if the character passed is one that should delineate the token and indicate
- *        to the parser that the number or variable/define/etc. is ready for interpretation.
- * 
- *        This function is a glorified macro that just identifies end-of-token symbols.
- * 
- * @param c the char to check for the presence of an end-of-token symbol
- * @return true if c is an end-of-token symbol, else false
- */
-bool bIsTokenDelimiter(char c);
-
-
-bool bIsMathTokenDelimiter(char c);
-
-
-bool bIsWhitespaceDelimiter(char c);
-
-
-enum eOrderOfOperations getPriorityofOperator(char c);
-
-//TODO look into use of atoi/itoa
-
-/**
- * @brief Obtains the discrete value of a non-operator token, deciphering it to be a label, address, hex, or dec number,
- *        and returns this value in returnValue
- * 
- * @param text the token text to be parsed
- * @param returnValue pointer to where to store the decoded value of the token text
- * @return int 1 if unable to decode token, else 0.
- */
-int getValueOfToken(char* text, int32_t* returnValue);
-
-/**
- * \brief Given an array of tokens to parse, returns the value
- * 
-
- * 
- * \param tokens 
- * \param returnValue 
- * \return uint8_t 
- */
-
-
-/**
- * \brief Recursively parses a series of tokens into a 16-bit unsigned integer, starting from
- *        startIndex.
- * 
- * 
- * 1) Check for base case (if no tokens beyond startIndex, populate returnValue with token's value)
- * 2) Find highest priority operator beyond startIndex
- * --If ( or [  found, call parse with them as the index and continue on
- * 3) Act on the highest priority math operator
- * 4) Remove tokens we have operated on
- * 5) call parse again with same start index
- * 
- * \param tokens the array of token strings to parse
- * \param startIndex the index this call of parse() should start at
- * \param returnValue 16-bit value that will be populated with the final value of char** tokens
- * \return int 0 if successful, else 1
- */
-int parse(char** tokens, int startIndex, int32_t* returnValue);
-
-
-/**
- * \brief Given a non-empty text input, isolates each discrete parsable token (variables,
- *        numbers, math operators, etc) into its own whitespace-free entry in an array.
- * 
- *        eg: "1 + foo" --> {"1", "+", "foo"}
- * 
- * \param text the input text to split into discrete entries in the array
- * \param array the array to be populated
- * \return int number of elements in the array, or -1 if an error occurs
- */
-int createArrayofTokens(char* text, char*** array);
-
-
 const char* MATH_DELIMITERS = "+-/*%%()[]";
 const char* WHITESPACE_DELIMITERS = "\t\r\n\v\f ";
 
 
-/**
- * \brief given a string of text to be input to the parser, count how many discrete elements
- *        that require parsing there are. Examples:
- * 
- *        foo[2] --> 4 (foo, [, 2, ]);  1+(7*3) --> 7 (1,+,(,7,*,3,))
- * 
- * \param text input text
- * \return int number of discrete parseable elements
- */
+//==== Local Functions ====//
+bool bIsTokenDelimiter(char c);
+bool bIsMathTokenDelimiter(char c);
+bool bIsWhitespaceDelimiter(char c);
+enum eOrderOfOperations getPriorityofOperator(char c);
+int getValueOfToken(char* text, int32_t* returnValue);
+int parse(int startIndex, int32_t* returnValue);
+int createArrayofTokens(char* text);
 int getNumberOfTokens(char* text);
-
+int removeTokens(int startIndex, int qty);
+int findHighestPriorityMathOperator(int startIndex, int* index);
+int doMath(int index);
 
 uint8_t parser_begin(char* text, uint16_t* returnValue) {
     int32_t tempVal; //Temporary, larger buffer for return value
@@ -126,8 +54,7 @@ uint8_t parser_begin(char* text, uint16_t* returnValue) {
     }
 
     //STEP 1: Turn the text into a discrete array of parsable tokenss
-    char** tokens = NULL;
-    numTokens = createArrayofTokens(text, &tokens);
+    numTokens = createArrayofTokens(text);
     if(numTokens < 1) {
         printf("\n[Parser]: Unknown error when creating array of tokens");
         *returnValue = 0;
@@ -136,12 +63,10 @@ uint8_t parser_begin(char* text, uint16_t* returnValue) {
 
 
     //STEP 2: Use internal parse function to recursively parse the data
-    if(parse(tokens, 0, &tempVal) != 0) {
+    if(parse(0, &tempVal) != 0) {
         *returnValue = 0;
-        printf("\n[Parser]: Unable to parse input text!");
-        for(int i = 0; i < numTokens; i++)
-            free(tokens[i]);
-        free(tokens);
+        if(DEBUG_PARSER)printf("\n[Parser]: Unable to parse input text!");
+        removeTokens(0,numTokens);
         return 1;
     }
     
@@ -161,11 +86,26 @@ uint8_t parser_begin(char* text, uint16_t* returnValue) {
 }
 
 
-int parse(char** tokens, int startIndex, int32_t* returnValue) {
+/**
+ * \brief Recursively parses a series of tokens into a 16-bit unsigned integer, starting from
+ *        startIndex.
+ * 
+ * 
+ * 1) Check for base case (if no tokens beyond startIndex, populate returnValue with token's value)
+ * 2) Find highest priority operator beyond startIndex
+ * --If ( or [  found, call parse with them as the index and continue on
+ * 3) Act on the highest priority math operator
+ * 4) Remove tokens we have operated on
+ * 5) call parse again with same start index
+ * 
+ * \param tokens the array of token strings to parse
+ * \param startIndex the index this call of parse() should start at
+ * \param returnValue 16-bit value that will be populated with the final value of char** tokens
+ * \return int 0 if successful, else 1
+ */
+int parse(int startIndex, int32_t* returnValue) {
     int i = startIndex + 1;
-    int hpi = i; //index of first highest priority math operator
-    int32_t scratchPad1, scratchPad2; //for return value usage
-    if(DEBUG_PARSER)printf("\n[parse]: Started parsing at index %d (token text: \"%s\")",startIndex,tokens[startIndex]);
+    if(DEBUG_PARSER)printf("\n[Parse]: Started parsing at index %d (token text: \"%s\")",startIndex,tokens[startIndex]);
 
     //STEP 1: BASE CASE: just extract the value of the token IFF...
     //                   a) there is only one token left (AKA we have parsed everything)
@@ -175,79 +115,225 @@ int parse(char** tokens, int startIndex, int32_t* returnValue) {
     if(startIndex == (numTokens-1) || tokens[startIndex+1][0] == ']' || tokens[startIndex+1][0] == ')') {
         if(getValueOfToken(tokens[startIndex],returnValue) != 0) {
             //ERROR STATE
-            printf("\n[PARSER]: Could not interpret value of token \"%s\"!",tokens[startIndex]);
+            if(DEBUG_PARSER)printf("\n[PARSER]: Could not interpret value of token \"%s\"!",tokens[startIndex]);
             return 1;
         }
         if(DEBUG_PARSER)printf("\nFinal token value: %d", *returnValue);
-
-
-        //Remove the ending ] or ) if applicable
-        if(startIndex < (numTokens-1) && (tokens[startIndex+1][0] == ']' || tokens[startIndex+1][0] == ')')) {
-            free(tokens[startIndex+1]);
-            for(int j = startIndex+2; j < numTokens; j++) {
-                tokens[j-1] = tokens[j];
-            }
-            numTokens--;
-        }
-
         return 0;
     }
 
     //STEP 2: Find first occurrence of the highest priority math operator
-    while(i < numTokens && tokens[i][0] != ']' && tokens[i][0] != ')') {
-        if(bIsMathTokenDelimiter(tokens[i][0])) {
-            //If it's an opening or closing bracket, recursively call the parser. If it's an
-            //index operator, change the '[' to a '+' and bypass all other operations,
-            //but if it's a '(', replace the '(' with the value directly
-            if((tokens[i][0] == '[') || (tokens[i][0] == '(')) {
-                parse(tokens, i+1, &scratchPad1);
-
-                if(tokens[i][0] == '[') {
-                    realloc(tokens[i+1],sizeof(char) * 16);
-                    if(snprintf(tokens[i+1],sizeof(char)*15,"%d",scratchPad1) > 14) {
-                        //Error -- wrote too many characters
-                    }
-
-                    //Since indexing effectively adds the contents between the [ ] to the
-                    //variable or number before it, change the [ to a + to let the existing
-                    //addition logic handle it
-                    tokens[i][0] = '+';
-
-                    //TODO add sanity check to make sure we're not indexing a number
-                    
-                    //Break out of the loop and force the parser to act on this data first
-                    break;
-
-                } else if((tokens[i][0] == '(')) {
-                    realloc(tokens[i],sizeof(char) * 16);
-                    if(snprintf(tokens[i],sizeof(char)*15,"%d",scratchPad1) > 14) {
-                        //Error -- wrote too many characters
-                    }
-
-                }
-
-                //Copy over the result
-                free(tokens[i]);
-                tokens[i] = tokens[i+1];
-
-            //Check to see if it's higher priority than our existing operator
-            } else if(getPriorityofOperator(tokens[i][0]) > getPriorityofOperator(tokens[hpi][0])) {
-                hpi = i;
-            }
-        }
-        i++;
+    if(findHighestPriorityMathOperator(startIndex, &i)) {
+        //error
+        if(DEBUG_PARSER)printf("Could not find highest priority token!");
+        return 1;
     }
 
+    if(DEBUG_PARSER)printf("\n[Parse]: highest priority token: \"%s\" (index %d)",tokens[i],i);
+    
+
     //Edge case: user had highest priority token at end of text input
-    if(hpi == (numTokens-1)) {
-        printf("\n[Parser]: ERROR: Highest priority \"%s\" token at end of input string \"%s\"!",tokens[hpi],parserText);
+    if(i == (numTokens-1)) {
+        if(DEBUG_PARSER)printf("\n[Parser]: ERROR: Highest priority \"%s\" token at end of input string \"%s\"!",tokens[i],parserText);
         return 1;
     }
 
     //STEP 3: Act on the highest priority math operator
-    getValueOfToken(tokens[hpi-1],&scratchPad1);
-    getValueOfToken(tokens[hpi+1],&scratchPad2);
-    switch(tokens[hpi][0]) {
+    if(doMath(i)) {
+        //Fail
+        return 1;
+    }
+
+    
+    //STEP 5: Recursively parse the rest of the tokens
+    return parse(startIndex, returnValue);
+}
+
+
+
+//=== Parser Token Helper Functiosn ====//
+
+/**
+ * @brief Obtains the discrete value of a non-operator token, deciphering it to be a label, address, hex, or dec number,
+ *        and returns this value in returnValue
+ * 
+ * @param text the token text to be parsed
+ * @param returnValue pointer to where to store the decoded value of the token text
+ * @return int 1 if unable to decode token, else 0.
+ */
+int getValueOfToken(char* text, int32_t* returnValue) {
+    //(DEBUG_PARSER)printf("\n[getValueOfToken]: Trying to make sense of %s...",text);
+    //TODO check sccanf results and make sure we report success/fail accurately
+
+    //Hexadecimal
+    if(strlen(text) > 2 && text[0] == '0' && text[1] == 'x') {
+        //if(DEBUG_PARSER)printf("Decoded to be hexadecimal! Value: ]");
+        if(sscanf(&(text[2]),"%x",(unsigned int*) returnValue) != 1) {
+            if(DEBUG_PARSER)printf("\n[PARSER ERROR: Could not decode hex value]");
+            return 1;
+        }
+
+        //if(DEBUG_PARSER)printf("Value: %x",*returnValue);
+
+    //Decimal
+    } else if(isdigit(text[0])) {
+        //if(DEBUG_PARSER)printf("Decoded to be integer! Value: ");
+        if(sscanf(text,"%d",(int*) returnValue) != 1) {
+            if(DEBUG_PARSER)printf("\n[PARSER ERROR: Could not decode integer]");
+            return 1;
+        }
+        //if(DEBUG_PARSER)printf("%d",*returnValue);
+    } else {
+        if(DEBUG_PARSER)printf("\n[PARSER ERROR: Could not decode text \"%s\"]",text);
+        return 1;
+    }
+
+    //Token / pound define
+    //else if(library_doesEntryExist(text)) {
+    //    *returnValue = library_getEntryValue(text);
+    //    return 0;
+    //}
+    //TODO handle variables and labels gracefully
+
+    return 0;
+}
+
+
+/**
+ * \brief Given a non-empty text input, isolates each discrete parsable token (variables,
+ *        numbers, math operators, etc) into its own whitespace-free entry in an array.
+ * 
+ *        eg: "1 + foo" --> {"1", "+", "foo"}
+ * 
+ * \param text the input text to split into discrete entries in the array
+ * \param array the array to be populated
+ * \return int number of elements in the array, or -1 if an error occurs
+ */
+int createArrayofTokens(char* text) {
+    int numTokens = getNumberOfTokens(text);
+    tokens = malloc(sizeof(char*) * numTokens);
+    int startOfToken = 0;
+    int endOfToken   = 0;
+    
+    //advance the start index to meaningful data if it isn't there already
+    while(bIsWhitespaceDelimiter(text[startOfToken]))
+        startOfToken++;
+    endOfToken = startOfToken;
+
+    //Populate each token's spot in the array with only the token and no whitespace
+    for(int i = 0; i < numTokens; i++) {
+
+        //Find the length (sans whitespace) of the token
+        if(bIsMathTokenDelimiter(text[startOfToken])) {
+            endOfToken = startOfToken + 1;
+        } else {
+            while(bIsTokenDelimiter(text[endOfToken]) == false) {
+                endOfToken++;
+            }
+        }
+        
+
+        //Copy over the text to a new string
+        tokens[i] = calloc(endOfToken - startOfToken + 1, sizeof(char));
+        memcpy(tokens[i], &(text[startOfToken]), sizeof(char) * (endOfToken - startOfToken));
+        //if(DEBUG_PARSER)printf("\n[createArrayOfTokens]: created token with text \"%s\"",array[0][i]);
+
+        startOfToken = endOfToken;
+        
+        //Before moving on to the next token (if applicable), advance past any whitespace (if applicable)
+        while(bIsWhitespaceDelimiter(text[startOfToken]))
+            startOfToken++;
+        endOfToken = startOfToken + 1;
+    }
+    
+    return numTokens;
+}
+
+
+/**
+ * \brief Utility to remove a given number of tokens from the array of tokens being parsed, then
+ *        shifts down the tokens that follow.
+ * 
+ * \note updates numTokens
+ * \note modifies tokens[], and reallocates it based on the number of tokens removed
+ * 
+ * \param startIndex the first index in the global tokens[] array to remove
+ * \param qty the number of tokens, including and following tokens[startIndex], to remove
+ * \return int 0 if successful, else 1
+ */
+int removeTokens(int startIndex, int qty) {
+    assert((startIndex+qty-1) < numTokens);
+    assert(qty > 0);
+    assert(startIndex >= 0);
+    if(qty == 0) return 0;
+
+    //1) Free tokens to be overwritten
+    for(int i = 0; i < qty; i++) {
+        free(tokens[startIndex+i]);
+    }
+
+    //2) move down tokens
+    for(int i = startIndex+qty; i < numTokens; i++) {
+        tokens[i-qty] = tokens[i];
+    }
+
+    //3) update numTokens and reallocate the array size
+    numTokens -= qty;
+    tokens = realloc(tokens, numTokens*sizeof(char*));
+    return 0;
+}
+
+
+/**
+ * \brief Searches the array of tokens, starting from startIndex, and returns the highest priority
+ *        math operator (using PEMDAS).
+ * 
+ * \param startIndex the index in the array of tokens to start at
+ * \param index pointer to an integer that the highest priority math operator will be stored
+ *              in if found.
+ * \return int 0 if successful, else 1
+ */
+int findHighestPriorityMathOperator(int startIndex, int* index) {
+    int i = startIndex;
+    
+    while(i < numTokens && tokens[i][0] != ']' && tokens[i][0] != ')') {
+        if(getPriorityofOperator(tokens[i][0]) > getPriorityofOperator(tokens[*index][0])) {
+                *index = i;
+        }
+        i++;
+    }
+
+    //If we didn't find any math operators, return (fail)
+    if(!bIsMathTokenDelimiter(tokens[*index][0]))
+        return 1;
+
+    return 0;
+}
+
+
+
+//==== Math Helper Functions ====//
+
+int doMath(int index) {
+    int32_t scratchPad1, scratchPad2; //for return value usage
+
+    //Step 1: Get the value of each token surrounding the index, IFF it's not a ( or [
+    if(tokens[index][0] != '(') {
+        if(getValueOfToken(tokens[index-1],&scratchPad1)) {
+            if(DEBUG_PARSER)printf("\n[Parser]: Could not decode first operand \"%s\"!",tokens[index-1]);
+            return 1;
+        }
+        if(tokens[index][0] != '[' && getValueOfToken(tokens[index+1],&scratchPad2)) {
+            if(DEBUG_PARSER)printf("\n[Parser]: Could not decode second operand \"%s\"!",tokens[index+1]);
+            return 1;
+        }
+
+        if(DEBUG_PARSER)printf("\n[doMath]: Performing math equation %d %c %d", scratchPad1, tokens[index][0], scratchPad2);
+    }
+
+
+    //Step 2: Act on the math operator
+    switch(tokens[index][0]) {
         case '^':
             scratchPad1 = pow(scratchPad1, scratchPad2);
             break;
@@ -275,112 +361,69 @@ int parse(char** tokens, int startIndex, int32_t* returnValue) {
         case '-':
             scratchPad1 = scratchPad1 - scratchPad2;
             break;
-    }
 
-    //STEP 4: free tokens operated on, replace first operand with result (in text)
-    //Free up unneeded strings...
-    free(tokens[hpi-1]);
-    free(tokens[hpi]);
-    free(tokens[hpi+1]);
+        case '[':
+            if(parse(index+1, &scratchPad2)) {
+                if(DEBUG_PARSER)printf("\n[Parser]: Error occurred while parsing recursively!");
+                return 1;
+            }
+            break;
 
-    //Make a new one with the result...
-    char* newToken = calloc(10, sizeof(char));
-    sprintf(newToken,"%d",scratchPad1);
-    tokens[hpi-1] = newToken;
+        case '(':
+            if(parse(index+1, &scratchPad2)) {
+                if(DEBUG_PARSER)printf("\n[Parser]: Error occurred while parsing recursively!");
+                return 1;
+            }
+            break;
 
-    //Shift down any remaining tokens
-    for(int j = hpi+1; j < numTokens; j++) {
-        tokens[j-1] = tokens[j];
-    }
-
-    //Update the number of tokens and shrink the array accordingly.
-    numTokens -= 2;
-    realloc(tokens, sizeof(char*) * numTokens);
-    
-    //STEP 5: Recursively parse the rest of the tokens
-    return parse(tokens, startIndex, returnValue);
-}
-
-
-int getValueOfToken(char* text, int32_t* returnValue) {
-    if(DEBUG_PARSER)printf("\n[getValueOfToken]: Trying to make sense of %s...",text);
-    //TODO check sccanf results and make sure we report success/fail accurately
-
-    //Hexadecimal
-    if(strlen(text) > 2 && text[0] == '0' && text[1] == 'x') {
-        if(DEBUG_PARSER)printf("Decoded to be hexadecimal! Value: ]");
-        if(sscanf(&(text[2]),"%x",(unsigned int*) returnValue) != 1) {
-            printf("\n[PARSER ERROR: Could not decode hex value]");
+        default:
+            //THIS SHOULD NEVER EXECUTE
+            if(DEBUG_PARSER)printf("\n[Parser]: ERROR: Bad math operator at index %d, equation of \"%s %c %s\"!",index, tokens[index-1], tokens[index][0], tokens[index+1]);
+            if(DEBUG_PARSER)printf("This is most likely an assembler bug!");
             return 1;
-        }
-
-        if(DEBUG_PARSER)printf("Value: %x",*returnValue);
-
-    //Decimal
-    } else if(isdigit(text[0])) {
-        if(DEBUG_PARSER)printf("Decoded to be integer! Value: ");
-        if(sscanf(text,"%d",(int*) returnValue) != 1) {
-            printf("\n[PARSER ERROR: Could not decode integer]");
-            return 1;
-        }
-        if(DEBUG_PARSER)printf("%d",*returnValue);
-    } else {
-        if(DEBUG_PARSER)printf("Error: Unable to decode!]");
-        return 1;
     }
 
-    //Token / pound define
-    //else if(library_doesEntryExist(text)) {
-    //    *returnValue = library_getEntryValue(text);
-    //    return 0;
-    //}
-    //TODO handle variables and labels gracefully
+    //Step 3: Cleanup and remove now-redundant tokens
+    switch(tokens[index][0]) {
+
+        case '[':
+            //Remove opening bracket, solution, and closing bracket
+            removeTokens(index, 3); 
+            //Replace variable/define being indexed with its value + the index offset
+            tokens[index-1] = realloc(tokens[index-1], 10*sizeof(char));
+            sprintf(tokens[index-1],"%d",scratchPad1+scratchPad2);
+            break;
+
+        case '(':
+            //Remove '('
+            removeTokens(index, 1);
+            //Remove ')' (now only index + 1 due to removal of '(')
+            removeTokens(index+1, 1);
+            break;
+
+        default:
+            //Store the answer where the first operand was and delete the operator and second operand
+            tokens[index-1] = realloc(tokens[index-1], 10*sizeof(char));
+            sprintf(tokens[index-1],"%d",scratchPad1);
+            removeTokens(index, 2);
+            break;
+    }
 
     return 0;
 }
 
 
-int createArrayofTokens(char* text, char*** array) {
-    int numTokens = getNumberOfTokens(text);
-    array[0] = malloc(sizeof(char*) * numTokens);
-    int startOfToken = 0;
-    int endOfToken   = 0;
-    
-    //advance the start index to meaningful data if it isn't there already
-    while(bIsWhitespaceDelimiter(text[startOfToken]))
-        startOfToken++;
-    endOfToken = startOfToken;
+//==== Text Helper Functions ====//
 
-    //Populate each token's spot in the array with only the token and no whitespace
-    for(int i = 0; i < numTokens; i++) {
-
-        //Find the length (sans whitespace) of the token
-        if(bIsMathTokenDelimiter(text[startOfToken])) {
-            endOfToken = startOfToken + 1;
-        } else {
-            while(bIsTokenDelimiter(text[endOfToken]) == false) {
-                endOfToken++;
-            }
-        }
-        
-
-        //Copy over the text to a new string
-        array[0][i] = calloc(endOfToken - startOfToken + 1, sizeof(char));
-        memcpy(array[0][i], &(text[startOfToken]), sizeof(char) * (endOfToken - startOfToken));
-        //if(DEBUG_PARSER)printf("\n[createArrayOfTokens]: created token with text \"%s\"",array[0][i]);
-
-        startOfToken = endOfToken;
-        
-        //Before moving on to the next token (if applicable), advance past any whitespace (if applicable)
-        while(bIsWhitespaceDelimiter(text[startOfToken]))
-            startOfToken++;
-        endOfToken = startOfToken + 1;
-    }
-    
-    return numTokens;
-}
-
-
+/**
+ * \brief given a string of text to be input to the parser, count how many discrete elements
+ *        that require parsing there are. Examples:
+ * 
+ *        foo[2] --> 4 (foo, [, 2, ]);  1+(7*3) --> 7 (1,+,(,7,*,3,))
+ * 
+ * \param text input text
+ * \return int number of discrete parseable elements
+ */
 int getNumberOfTokens(char* text) {
     int i = 1;
     if(strlen(text) == 0) {
@@ -412,6 +455,15 @@ int getNumberOfTokens(char* text) {
 }
 
 
+/**
+ * @brief Returns true if the character passed is one that should delineate the token and indicate
+ *        to the parser that the number or variable/define/etc. is ready for interpretation.
+ * 
+ *        This function is a glorified macro that just identifies end-of-token symbols.
+ * 
+ * @param c the char to check for the presence of an end-of-token symbol
+ * @return true if c is an end-of-token symbol, else false
+ */
 bool bIsTokenDelimiter(char c) {
    return bIsMathTokenDelimiter(c) || bIsWhitespaceDelimiter(c);
 }
@@ -447,6 +499,8 @@ enum eOrderOfOperations getPriorityofOperator(char c) {
 
         //In case we are ever passed a non-math operator, return -1
         default:
-        return -1;
+        return eOOO_noOperator;
     }
 }
+
+
