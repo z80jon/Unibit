@@ -44,6 +44,8 @@ int removeTokens(int startIndex, int qty);
 int findHighestPriorityMathOperator(int startIndex, int* index);
 int doMath(int index);
 
+
+
 uint8_t parser_begin(char* text, uint16_t* returnValue) {
     int32_t tempVal; //Temporary, larger buffer for return value
     if(DEBUG_PARSER)printf("\n[Parser]: Started parsing \"%s\".",text);
@@ -148,7 +150,6 @@ int parse(int startIndex, int32_t* returnValue) {
     //STEP 5: Recursively parse the rest of the tokens
     return parse(startIndex, returnValue);
 }
-
 
 
 //=== Parser Token Helper Functiosn ====//
@@ -314,9 +315,25 @@ int findHighestPriorityMathOperator(int startIndex, int* index) {
 
 //==== Math Helper Functions ====//
 
+/**
+ * \brief Given an index of a math operator, parentheses, or bracket, performs the operator
+ *        (as applicable) on the adjacent indices in the array of Tokens.
+ * 
+ * \param index 
+ * \return int 
+ */
 int doMath(int index) {
     int32_t scratchPad1, scratchPad2; //for return value usage
-
+    if((index == 0 || index == numTokens-1) &&
+        tokens[index][0] != '(' && tokens[index][0] != '[') {
+        if(DEBUG_PARSER)printf("\n[doMath]: ERROR: illegal index %d!",index);
+        return 1;
+    }
+    if(tokens[index][0] == '[' && index >= numTokens-2) {
+        if(DEBUG_PARSER)printf("\n[doMath]: ERROR: Opening '[' with no closing ']'!");
+        return 1;
+    }
+    
     //Step 1: Get the value of each token surrounding the index, IFF it's not a ( or [
     if(tokens[index][0] != '(') {
         if(getValueOfToken(tokens[index-1],&scratchPad1)) {
@@ -413,6 +430,7 @@ int doMath(int index) {
 }
 
 
+
 //==== Text Helper Functions ====//
 
 /**
@@ -469,11 +487,27 @@ bool bIsTokenDelimiter(char c) {
 }
 
 
+/**
+ * \brief Returns true if the character passed is found in MATH_DELIMITERS. In other words,
+ *        it checks if it is a math operator (eg, +, -, *, etc) OR a [, ], (, or).
+ * 
+ * \param c the character to check
+ * \return true if it is a math operator or parentheses/bracket
+ * \return false if not
+ */
 bool bIsMathTokenDelimiter(char c) {
     return strchr(MATH_DELIMITERS, c) != NULL;
 }
 
 
+/**
+ * \brief Returns true if the character passed is found in WHITESPACE_DELIMITERS. In
+ *        other words, it checks if it is a space, tab, newline, carriage return, etc.
+ * 
+ * \param c the character to check
+ * \return true if it is some form of whitespace, carriage return, etc.
+ * \return false if not
+ */
 bool bIsWhitespaceDelimiter(char c) {
     return strchr(WHITESPACE_DELIMITERS, c) != NULL;
 }

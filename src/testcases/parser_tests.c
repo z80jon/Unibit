@@ -6,14 +6,13 @@
 #include <string.h>
 
 
-
 //===== PARSER TESTS =====//
 extern int getNumberOfTokens(char* text);
 extern int createArrayofTokens(char* text);
 extern char** tokens;
 //extern int getValueOfToken(char* text, uint16_t* returnValue);
 
-#define NUM_PARSER_INPUT_STRINGS 12
+#define NUM_PARSER_INPUT_STRINGS 17
 static char* parserInputStrings[NUM_PARSER_INPUT_STRINGS + 1] = {
     "1",
     "1+",
@@ -27,6 +26,11 @@ static char* parserInputStrings[NUM_PARSER_INPUT_STRINGS + 1] = {
     "2*((7+3)*2)+1", //41
     "92+(7 *(3 ) )", //113
     "172[12*2]",     //196
+    "+1",
+    "-2",
+    "(f",
+    "[f",
+    "0x7cF",
     NULL
 };
 
@@ -43,6 +47,11 @@ static char* createArrayofTokensOutputs[NUM_PARSER_INPUT_STRINGS + 1][25] = {
     {"2","*","(","(","7","+","3",")","*","2",")","+","1"}, //41
     {"92","+","(","7","*","(","3",")",")"},   //113
     {"172","[","12","*","2","]"},       //196
+    {"+","1"},
+    {"-","2"},
+    {"(","f"},
+    {"[","f"},
+    {"0x7cF"},
     {NULL}
 };
 
@@ -58,7 +67,12 @@ static int getNumberOfTokensOutputs[] = {
     3,
     13,
     9,
-    6
+    6,
+    2,
+    2,
+    2,
+    2,
+    1
 };
 
 
@@ -74,7 +88,12 @@ static int parserOutputs[] = {
     2,
     41,
     113,
-    196
+    196,
+    9999,
+    9999,
+    9999,
+    9999,
+    1999
 };
 
 static MunitParameterEnum testParams__parser[] = {
@@ -85,10 +104,8 @@ static MunitParameterEnum testParams__parser[] = {
 static MunitResult parser_getNumberOfTokens(const MunitParameter params[], void* data) {
     char* input = munit_parameters_get(params, "inputs");
     int i;
-    for(i = 0; i < NUM_PARSER_INPUT_STRINGS; i++)
-        if(strcmp(parserInputStrings[i], input) == 0)
-            break;
-    int output = getNumberOfTokensOutputs[i];//atoi(munit_parameters_get(params, "getNumberOfTokensOutput"));
+    for(i = 0; strcmp(parserInputStrings[i], input) != 0; i++);
+    int output = getNumberOfTokensOutputs[i];
 
     munit_assert_int(getNumberOfTokens(input), ==, output);
 
@@ -100,9 +117,7 @@ static MunitResult parser_getNumberOfTokens(const MunitParameter params[], void*
 static MunitResult parser_createArrayOfTokens(const MunitParameter params[], void* data) {
     char* input = munit_parameters_get(params, "inputs");
     int i;
-    for(i = 0; i < NUM_PARSER_INPUT_STRINGS; i++)
-        if(strcmp(parserInputStrings[i], input) == 0)
-            break;
+    for(i = 0; strcmp(parserInputStrings[i], input) != 0; i++);
     int tokensExpected = getNumberOfTokensOutputs[i];
     MunitResult passFail = MUNIT_OK;
 
@@ -127,12 +142,10 @@ static MunitResult parser_createArrayOfTokens(const MunitParameter params[], voi
 static MunitResult parser_parser_begin(const MunitParameter params[], void* data) {
     char* input = munit_parameters_get(params, "inputs");
     int i;
-    for(i = 0; i < NUM_PARSER_INPUT_STRINGS; i++)
-        if(strcmp(parserInputStrings[i], input) == 0)
-            break;
+    for(i = 0; strcmp(parserInputStrings[i], input) != 0; i++);
     int expectedOutput = parserOutputs[i];//atoi(munit_parameters_get(params, "getNumberOfTokensOutput"));
+    
     uint16_t solution;
-
     int retVal = parser_begin(input, &solution);
 
     //Edge case: Invalid input, error expected
@@ -148,6 +161,8 @@ static MunitResult parser_parser_begin(const MunitParameter params[], void* data
 
     
 }
+
+
 MunitTest parser_tests[] = {
     {
         (char*) "/getNumberOfTokens",
@@ -174,3 +189,5 @@ MunitTest parser_tests[] = {
         testParams__parser
     }
 };
+
+
