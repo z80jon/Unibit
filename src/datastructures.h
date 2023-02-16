@@ -32,6 +32,8 @@ struct programToken_t {
     enum eProgTokenType type;    //< the type of data structure stored in data
     void* data;                  //< contains token type-specific data
     char* originalText;          //< the original line of code introduced to this token
+    char* fileName;              //< The file name this token originates from. (Shared string)
+    uint16_t lineNo;             //< the line number (in the file) that this token came from
 
     struct programToken_t* prev; //< The previous program token in the sequence
     struct programToken_t* next; //< The next program token in the sequence
