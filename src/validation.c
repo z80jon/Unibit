@@ -1,5 +1,7 @@
 #include "validation.h"
 #include "parser_tests.h"
+#include "tokenizer_tests.h"
+#include "utils_tests.h"
 #include <munit.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +12,13 @@
 
 
 //===== SOME OTHER STUFF =====//
+
+
+static const MunitSuite other_tests[] = {
+
+  {(char*) "/utils", utils_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE},
+  { NULL, NULL, NULL, 0, MUNIT_SUITE_OPTION_NONE }
+};
 
 static const MunitSuite testSuite__parser = {
   /* This string will be prepended to all test names in this suite;
@@ -25,7 +34,7 @@ static const MunitSuite testSuite__parser = {
    * a great help to projects with lots of tests by making it easier
    * to spread the tests across many files.  This is where you would
    * put "other_suites" (which is commented out above). */
-  NULL,
+  other_tests,
   /* An interesting feature of µnit is that it supports automatically
    * running multiple iterations of the tests.  This is usually only
    * interesting if you make use of the PRNG to randomize your tests

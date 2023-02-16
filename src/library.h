@@ -140,8 +140,15 @@ uint8_t library_ResolveLabelAddresses(struct programToken_t* head);
 void library_freeMemory();
 
 
-
-
+/**
+ * \brief Determines if the text passed exists in its database, and if so, if it is possible to
+ *        translate it to a number (eg, a variable addresss)
+ * 
+ * \param text the string to evalate the numerizability of
+ * \return true if yes
+ * \return false if no
+ */
+bool library_bIsTextNumerizable(char* text);
 
 
 //====================== Internal-use Functions ======================//

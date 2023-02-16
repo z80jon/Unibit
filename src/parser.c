@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "utils.h"
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
@@ -27,14 +28,9 @@ enum eOrderOfOperations {
     eOOO_parenthesesBracket             //< Parentheses or bracket operator (highest priority)
 };
 
-const char* MATH_DELIMITERS = "+-/*%%()[]";
-const char* WHITESPACE_DELIMITERS = "\t\r\n\v\f ";
-
 
 //==== Local Functions ====//
 bool bIsTokenDelimiter(char c);
-bool bIsMathTokenDelimiter(char c);
-bool bIsWhitespaceDelimiter(char c);
 enum eOrderOfOperations getPriorityofOperator(char c);
 int getValueOfToken(char* text, int32_t* returnValue);
 int parse(int startIndex, int32_t* returnValue);
@@ -455,6 +451,9 @@ int getNumberOfTokens(char* text) {
             //If we have encountered a delimiter, it marks the end of the token and the start of another--
             textDelim = true;
             numTokens++;
+            //while(bIsWhitespaceDelimiter(text[i+1]))
+            //    i++;
+                
         } else if(bIsTokenDelimiter(text[i]) && textDelim == true) {
             //If we have not yet reset seeing a delimitor, make sure it's a math operator and not just a
             //repeat white space character before incrementing the counter again
@@ -484,32 +483,6 @@ int getNumberOfTokens(char* text) {
  */
 bool bIsTokenDelimiter(char c) {
    return bIsMathTokenDelimiter(c) || bIsWhitespaceDelimiter(c);
-}
-
-
-/**
- * \brief Returns true if the character passed is found in MATH_DELIMITERS. In other words,
- *        it checks if it is a math operator (eg, +, -, *, etc) OR a [, ], (, or).
- * 
- * \param c the character to check
- * \return true if it is a math operator or parentheses/bracket
- * \return false if not
- */
-bool bIsMathTokenDelimiter(char c) {
-    return strchr(MATH_DELIMITERS, c) != NULL;
-}
-
-
-/**
- * \brief Returns true if the character passed is found in WHITESPACE_DELIMITERS. In
- *        other words, it checks if it is a space, tab, newline, carriage return, etc.
- * 
- * \param c the character to check
- * \return true if it is some form of whitespace, carriage return, etc.
- * \return false if not
- */
-bool bIsWhitespaceDelimiter(char c) {
-    return strchr(WHITESPACE_DELIMITERS, c) != NULL;
 }
 
 

@@ -17,7 +17,7 @@
  * @param linesOfTextFromFile a malloc'd pointer to the lines of text.
  * @return int 0 if successful
  */
-int fileIO_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines);
+int fileIO_readInFile(char* filePath, char** fileText);
 
 
 /**

@@ -17,7 +17,7 @@ static char* parserInputStrings[NUM_PARSER_INPUT_STRINGS + 1] = {
     "1",
     "1+",
     "1+2 ",
-    "1 + 2",
+    "1 + 2 ",
     "1+3*2",
     "1*3*(12+2)",
     "parser[foo]",
@@ -100,6 +100,7 @@ static MunitParameterEnum testParams__parser[] = {
   { (char*) "inputs", parserInputStrings },
   { NULL, NULL },
 };
+
 
 static MunitResult parser_getNumberOfTokens(const MunitParameter params[], void* data) {
     char* input = munit_parameters_get(params, "inputs");

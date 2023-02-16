@@ -1,6 +1,7 @@
 #include "fileIO.h"
 #include "tokenizer.h"
 #include "datastructures.h"
+#include "utils.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,22 +79,27 @@ enum opCode identifyOpcode(char* text);
 //====================== Main Method ======================//
 
 struct programToken_t* tokenizer_tokenize(char* inputFile) {
-    uint32_t numLines;
-    char** linesOfText;
-    fileIO_readInFile(inputFile, &linesOfText, &numLines);
+    char* fileText;
+    fileIO_readInFile(inputFile, &fileText);
+    int index; //Pointer to beginning of text token
+    //TODO error detection and handling
+
+    //Case: Empty file
+    if(strlen(fileText) == 0)
+        return NULL;
 
     struct programToken_t* head = NULL;
     struct programToken_t* pointer = NULL;
     struct programToken_t* next = NULL;
-    uint16_t currentLine = 0;
     printf("File read");
 
     //Step 1: create linked list of tokens of each part of the program (instructions, labels, constants, etc.)
-    while(currentLine < numLines) {
-        char* sterilizedLineText = fileIO_sterilizeText(linesOfText[currentLine]);//remove any comments, extra spaces, etc.
-        if(sterilizedLineText != NULL) {
+    while(1) {
 
-            switch(getTokenType(sterilizedLineText)) {
+        
+        if(/*sterilizedLineText != NULL*/0) {
+
+            switch(getTokenType(0/*sterilizedLineText*/)) {
 //            case ePROGTOKEN_PREPROCESSOR_DIRECTIVE:
 //                next = makePreprocessorToken(sterilizedLineText);
 //                break;
@@ -103,7 +109,7 @@ struct programToken_t* tokenizer_tokenize(char* inputFile) {
 //                break;
 
             case ePROGTOKEN_INSTRUCTION:
-                next = makeInstructionToken(sterilizedLineText, linesOfText[currentLine]);
+                //next = makeInstructionToken(sterilizedLineText, linesOfText[currentLine]);
                 
                 break;
 
@@ -131,18 +137,14 @@ struct programToken_t* tokenizer_tokenize(char* inputFile) {
             }
             pointer = next;
         }
-
-        currentLine++;
+    
     }
 
     //Last token edge case
     pointer->next = NULL;
 
     //deallocate memory for the file text we just finished processing
-    for(uint16_t i = 0; i < numLines; i++) {
-        free(linesOfText[i]);
-    }
-    free(linesOfText);
+    free(fileText);
 
     return head;
 }
@@ -271,8 +273,7 @@ enum eProgTokenType getTokenType(char* c) {
         return ePROGTOKEN_INSTRUCTION;
     }
     
-    printf("ERROR: Cannot discern how to handle text '%s'", c);
-    return 1;
+    return -1;
 }
 
 enum opCode identifyOpcode(char* text) {
@@ -292,7 +293,6 @@ enum opCode identifyOpcode(char* text) {
 
     return opcode;
 }
-
 
 void tokenizer_printOutToken(struct programToken_t* t) {
     struct instruction_t* data;
@@ -346,5 +346,87 @@ void tokenizer_printOutToken(struct programToken_t* t) {
     
 }
 
+
+
+int nextTokenPointer;
+char* nextTokenText;
+char* getNextToken(char* text, int* line) {
+    //Base case
+    if(text != NULL) {
+        nextTokenText = text;
+        nextTokenPointer = 0;
+    }
+
+    //TODO error handling, illegal tokens
+
+    //First, find the beginning of the next token
+    while(getTokenType(&(text[nextTokenPointer])) == -1) {
+
+        //If we detect a comment, advance to the end of it
+        if(bIsStartOfComment(text, nextTokenPointer)) {
+            nextTokenPointer = findEndOfComment(text, nextTokenPointer);
+        } else {
+            nextTokenPointer++;
+        }
+
+        //Edge case: no additional tokens found
+        if(text[nextTokenPointer] == '\0')
+            return NULL;
+    }
+
+    int endOfToken = nextTokenPointer;
+
+    //Based on the type of token, the end delineation may vary.
+    switch(getTokenType(&(text[nextTokenPointer]))) {
+    
+    case ePROGTOKEN_VARIABLE:
+    case ePROGTOKEN_INSTRUCTION:
+        while(1) {
+            if(text[endOfToken] == ';')
+                break;
+            
+            //Skip past any comments we find along the way
+            if(bIsStartOfComment(text, endOfToken)) {
+                endOfToken = findEndOfComment(text, endOfToken);
+            } else {
+                endOfToken++;
+            }
+        }
+        break;
+        //End is marked by a ; not inside a comment
+        
+    case ePROGTOKEN_LABEL:
+        //End is marked by a : immediately following it
+        //No need to handle edge cases, comments, etc. as all labels are immediately followed by a ':'.
+        while(text[++endOfToken] != ':');
+        break;
+    
+    case ePROGTOKEN_PREPROCESSOR_DIRECTIVE:
+        //End is marked by a newline without a '\' immediately preceding it (and not inside a comment)
+        while(1) {
+
+            if(text[endOfToken] == '\n' && text[endOfToken-1] != '\\')
+                break;
+            
+            //If we start a comment
+            if(bIsStartOfComment(text, endOfToken)) {
+                //TODO fix functionality and how we handle preprocessor
+                //ends of lines when there's a comment involved
+                endOfToken = findEndOfComment(text, endOfToken);
+            } else {
+                endOfToken++;
+            }
+        }
+        break;
+    }
+
+    //Copy over the token in full
+    char* nextToken = calloc((endOfToken - nextTokenPointer + 1),sizeof(char));
+    memcpy(nextToken, &(text[nextTokenPointer]), endOfToken-nextTokenPointer);
+
+    nextTokenPointer = endOfToken;
+    return nextToken;
+
+}
 
 

@@ -8,11 +8,15 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include "utils.h"
 
 
-bool bIsStartOfComment(char* text, int index);
 
-int fileIO_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t* numberOfLines) {
+
+int removeChar(char** text, int index);
+
+
+int fileIO_readInFile(char* filePath, char** fileText) {
 
     //Open file
     if(fileIO_DEBUG)printf("\nReading in file '%s'",filePath);
@@ -22,58 +26,17 @@ int fileIO_readInFile(char* filePath, char*** linesOfTextFromFile, uint32_t* num
         return 1;
     }
 
-    //Read in # lines
-    uint32_t numLines = 1;
-    int c = getc(fp);
-    //Empty file edge case
-    if(c == EOF)
-        numLines = 0;
-    while(c != EOF) {
-        if(c == '\n')
-            numLines++;
-        c = getc(fp);
-    }
+    //Read in the number of characters
+    fseek(fp, 0L, SEEK_END);
+    uint32_t numChars = ftell(fp);
     
-    //malloc pointers to lines
-    *linesOfTextFromFile = (char**) malloc(sizeof(char**) * numLines);
+    //malloc string for file text
+    *fileText = (char*) malloc(sizeof(char) * numChars);
 
-    //Determine number of characters in each line for malloc purposes, and malloc.
+    //Finally, copy over the text
     fseek(fp, 0, SEEK_SET);
-    for(uint32_t i = 0; i < numLines; i++) {
+    fread(*fileText, 1, numChars, fp);
 
-        uint32_t numChars = 1;
-        c = getc(fp);
-        if(c == '\n' || c == EOF)
-            numChars = 0;
-        while(c != EOF && c != '\n') {
-            c = getc(fp);
-            numChars++;
-        }
-
-        //printf("\nNum chars in line %d: %d",i,numChars);
-        linesOfTextFromFile[0][i] = (char*) calloc(numChars+1, sizeof(char));//room for null term
-    }
-
-    //Finally, copy over each and every line.
-    fseek(fp, 0, SEEK_SET);
-    for(uint32_t i = 0; i < numLines; i++) {
-        
-        //Only copy if not /n
-        uint32_t j = 0;
-        c = getc(fp);
-        if(!(c == '\n' || c == EOF)) {
-            while(c != EOF && c != '\n') {
-                linesOfTextFromFile[0][i][j] = c;
-                c = getc(fp);
-                j++;
-        }
-        } 
-    }
-
-    *numberOfLines = numLines;
-
-
-    if(fileIO_DEBUG)printf("\nRead in %d lines!\n",numLines);
     fclose(fp);
     return 0;
 }
@@ -88,12 +51,18 @@ uint8_t fileIO_doesFileExist(char* filePath) {
 char* fileIO_sterilizeText(char* text) {
     if(strlen(text) == 0)
         return NULL;
+
+    for(int i = 0; i < strlen(text); i++) {
+        
+        //Remove redundant whitespaces or initial whitespaces
+        //if( || (i == 0 && bIsWhitespaceDelimiter(text[i])))
+    }
     
     uint16_t i = 0; //will step through input text
     uint16_t j = 0; //will step through toReturn, and help us to shrink it to only the needed size.
     char* toReturn = (char*) calloc(strlen(text)+1, sizeof(char));
     
-    bool bUsedSpace = true;//prevents copying space multiple times. Set to true so we don't copy
+    bool bUsedSpace = true;//prevents copying space multiple times. Set to true so we don't3 copy
                            //any initial spaces.
     while(i < strlen(text) && (!bIsStartOfComment(text,i) && text[i] != '\r' && text[i] != '\n')) {
 
@@ -236,14 +205,25 @@ bool fileIO_containsIgnoreCase(char const *str1, char const *str2)
 }
 
 
+
 /**
- * \brief Returns true if the char at text[index] is the first '/' in a '//' comment start
+ * \brief Given a pointer to an array, remove the character at index "index" and shift all following characters down.
+ *        Then, reallocate the array accordingly.
  * 
- * \param text the string to check
- * \param index the index within the string 'text' to check
- * \return true if it is the beginning of a comment
- * \return false if it is not the beginning of a comment
+ * \param text 
+ * \param index 
+ * \return int 
  */
-bool bIsStartOfComment(char* text, int index) {
-    return (strlen(text) > (index + 1)) && text[index] == '/' && text[index+1] == '/';
+int removeChar(char** text, int index) {
+    if(index > strlen(*text) || index < 0)
+        return 1;
+
+    for(int i = index; i < strlen(text) - 1; i++) {
+        *text[i] = *text[i+1];
+    }
+
+    //Shrink the allocated portion of memory by 1
+    *text = realloc(*text, strlen(text) * sizeof(char));
 }
+
+

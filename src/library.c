@@ -1,5 +1,6 @@
 #include "library.h"
 #include "datastructures.h"
+#include "parser.h"
 
 
 //====================== Library Data Structures ======================//
@@ -7,7 +8,8 @@
 enum eLibTokenType {
     eLIBTOKEN_UNKNOWN = 0,  //< Unknown token type. Assigned to generic tokens by default.
     eLIBTOKEN_VARIABLE,     //< Indicates that void* token is a libraryToken_variable
-    eLIBTOKEN_LABEL         //< Indicates that void* token is a libraryToken_label
+    eLIBTOKEN_LABEL,        //< Indicates that void* token is a libraryToken_label
+    eLIBTOKEN_MACRO
 };
 
 uint16_t numLibraryTokens = 0;           ///Holds the current number of library tokens
@@ -36,6 +38,10 @@ struct libraryToken_variable_t {
 
 struct libraryToken_label_t {
     struct programToken_t* instr; //< The instruction whose address the label points to
+};
+
+struct libraryToken_macro_t {
+    char* str;  //< The text the macro expands to contain
 };
 
 //====================== Variable Functions ======================//
@@ -289,6 +295,8 @@ void library_freeMemory() {
 
 enum eLibTokenType library_getTokenType(char* name) {
     struct libraryToken_t* token = getToken(name);
+    //This is a bug, we're returning an int when an enum is expected.
+    //int could be interpreted as valid enum value
     if(token == NULL)
         return LIBRARY_STATUS__NAME_NOT_FOUND;
     
@@ -296,7 +304,27 @@ enum eLibTokenType library_getTokenType(char* name) {
 }
 
 
+bool library_bIsTextNumerizable(char* text) {
+    struct libraryToken_t* token = getToken(text);
+    uint16_t scratchpad;
+    if(token == NULL) {
+        return false;
+    }
 
+    if(token->type == eLIBTOKEN_MACRO &&
+       parser_begin(((struct libraryToken_macro_t*) token->data)->str,&scratchpad)) {
+        return false;
+    }
+    return true;
+}
+
+
+
+int library_numerize(char* text, uint16_t* value) {
+    if(library_bIsTextNumerizable(text) == false)
+        return 1;
+    
+}
 
 //====================== Internal-use Functions ======================//
 
