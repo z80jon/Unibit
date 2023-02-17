@@ -37,4 +37,17 @@ struct programToken_t* tokenizer_removeToken(struct programToken_t* token);
 void tokenizer_printOutToken(struct programToken_t* t);
 
 
+/**
+ * \brief Extracts the next parsable, complete token and returns it in a newly malloc'd string
+ * 
+ * \note this cannot be called by multiple functions simultaneously! It saves certain data in global
+ *       variables!
+ * 
+ * \param text The beginning of a file containing tokens to be extracted. Note that only the first call
+ *             should contain the string--all subsequent calls should use NULL
+ * \param line Pointer to the line number the newly returned token was found at (if one is found)
+ * \return char* Pointer to the newly malloc'd string containing the next token, else NULL.
+ */
+char* getNextToken(char* text, int* line);
+
 #endif

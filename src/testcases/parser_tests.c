@@ -188,7 +188,8 @@ MunitTest parser_tests[] = {
         NULL,
         MUNIT_TEST_OPTION_NONE,
         testParams__parser
-    }
+    },
+    { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
 };
 
 

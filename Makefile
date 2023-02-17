@@ -1,7 +1,7 @@
 CC = gcc
 #C flags, test C flags
 CFLAGS = -Wall -pedantic -std=c99 -g -Wfatal-errors
-TCFLAGS = $(CFLAGS) -Wno-discarded-qualifiers -Ilib/munit -I$(SDIR) -I$(TSDIR)
+TCFLAGS = $(CFLAGS) -Wno-discarded-qualifiers -Ilib\munit -I$(SDIR) -I$(TSDIR)
 #-WError -pedantic 
 
 #Source Directory
@@ -33,6 +33,9 @@ parser_tests.o: parser.o
 
 utils_tests.o: utils.o
 	$(CC) -c $(TSDIR)\utils_tests.c $(TCFLAGS) -o $(ODIR)/$@
+
+tokenizer_tests.o: tokenizer.o
+	$(CC) -c $(TSDIR)\tokenizer_tests.c $(TCFLAGS) -o $(ODIR)/$@
 
 #==== ASSEMBLER OBJECT FILES ====#
 assembler.o: src\assembler.c

@@ -16,8 +16,9 @@
 
 static const MunitSuite other_tests[] = {
 
-  {(char*) "/utils", utils_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE},
-  { NULL, NULL, NULL, 0, MUNIT_SUITE_OPTION_NONE }
+    {(char*) "/utils", utils_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE},
+    {(char*) "/tokenizer", tokenizer_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE},
+    { NULL, NULL, NULL, 0, MUNIT_SUITE_OPTION_NONE }
 };
 
 static const MunitSuite testSuite__parser = {

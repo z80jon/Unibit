@@ -384,6 +384,9 @@ char* getNextToken(char* text, int* line) {
         while(1) {
             if(text[endOfToken] == ';')
                 break;
+            if(text[endOfToken] == '\0')
+                return NULL;//TODO add error handling--this should not happen!
+                            //Or just have tokenizer handle it?
             
             //Skip past any comments we find along the way
             if(bIsStartOfComment(text, endOfToken)) {

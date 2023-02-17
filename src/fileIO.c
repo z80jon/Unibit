@@ -218,12 +218,12 @@ int removeChar(char** text, int index) {
     if(index > strlen(*text) || index < 0)
         return 1;
 
-    for(int i = index; i < strlen(text) - 1; i++) {
+    for(int i = index; i < strlen(*text) - 1; i++) {
         *text[i] = *text[i+1];
     }
 
     //Shrink the allocated portion of memory by 1
-    *text = realloc(*text, strlen(text) * sizeof(char));
+    *text = realloc(*text, strlen(*text) * sizeof(char));
 }
 
 
